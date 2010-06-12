@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:WindowedApplication xmlns:mx="http://www.adobe.com/2006/mxml" layout="absolute" title="Creators Project" backgroundColor="0xffffff"
+	applicationComplete="init3D()">
+
+	<mx:Script>
+		<![CDATA[
+			import com.creatorsproject.ui.ITickable;
+			import org.papervision3d.materials.utils.MaterialsList;
+			import org.papervision3d.materials.ColorMaterial;
+			import org.papervision3d.objects.primitives.Cube;
+			import org.papervision3d.cameras.Camera3D;
+			import org.papervision3d.scenes.Scene3D;
+			import org.papervision3d.render.BasicRenderEngine;
+			import org.papervision3d.view.Viewport3D;
+		
+			private var _viewport:Viewport3D;
+			private var _renderer:BasicRenderEngine;
+			private var _scene:Scene3D;
+			private var _camera:Camera3D;
+			
+			public function toggleFullscreen():void {
+				if(stage.displayState == StageDisplayState.NORMAL) {
+					stage.displayState = StageDisplayState.FULL_SCREEN_INTERACTIVE;
+				} else {
+					stage.displayState = StageDisplayState.NORMAL;
+				}
+			}
+			
+			public function init3D():void {
+				_viewport = new Viewport3D(0, 0, true, true);
+				_renderer = new BasicRenderEngine();
+				_scene = new Scene3D();
+				_camera = new Camera3D();
+				
+				this.paperBuffer.addChild(_viewport);
+				
+				this.addEventListener(Event.ENTER_FRAME, this.onRenderTick); 
+			}
+			
+			public function onRenderTick(event:Event):void {
+				
+				for each(var t:ITickable in _scene.children) {
+					t.tick();
+				}
+				
+				_renderer.renderScene(_scene, _camera, _viewport);
+			}
+			
+			/**********************
+			 *     EVENT DEMO     *
+			 **********************/
+			public function initEventDemo():void {
+				
+			}
+		]]>
+	</mx:Script>
+	
+	<mx:UIComponent id="paperBuffer" width="100%" height="100%" opaqueBackground="0xffffff"/>
+	<mx:Button label="Toggle your screen" right="10" bottom = "10" click="this.toggleFullscreen()"/>
+</mx:WindowedApplication>
