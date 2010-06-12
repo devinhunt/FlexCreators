@@ -4,6 +4,9 @@
 
 	<mx:Script>
 		<![CDATA[
+			import com.creatorsproject.data.Schedule;
+			import com.creatorsproject.data.EventLocation;
+			import com.creatorsproject.data.ScheduleEvent;
 			import com.creatorsproject.ui.ITickable;
 			import org.papervision3d.materials.utils.MaterialsList;
 			import org.papervision3d.materials.ColorMaterial;
@@ -50,6 +53,12 @@
 			 *     EVENT DEMO     *
 			 **********************/
 			public function initEventDemo():void {
+				var schedule:Schedule = new Schedule();
+				
+				var e1:ScheduleEvent = new ScheduleEvent("Diplo Live", "Live Music", 
+															new EventLocation("Loading Dock", ""), 
+															new Date("Sat Jun 12 2010 10:00:00 PM"),
+															new Date("Sat Jun 12 2010 12:00:00 PM"));
 				
 			}
 		]]>

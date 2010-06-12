@@ -10,10 +10,10 @@ package com.creatorsproject.data
 		public var floor:String;
 		public var room:String;
 		
-		public function EventLocation(room:String, floor:String = "1st Floor")
+		public function EventLocation(floor:String, room:String)
 		{
+			this.floor = floor;
 			this.room = room;
-			this.floor = floor
 		}
 	}
 }

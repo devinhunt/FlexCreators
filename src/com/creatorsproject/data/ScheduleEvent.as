@@ -1,5 +1,7 @@
 package com.creatorsproject.data
 {
+	import flash.events.Event;
+	
 	public class ScheduleEvent
 	{
 		
@@ -15,13 +17,16 @@ package com.creatorsproject.data
 		/** The end time of the event in local time zone */
 		public var endTime:Date;
 		
-		/** And where it's happening */
+		/** And the where it's happening in */
 		public var location:EventLocation;
 		
-		public function ScheduleEvent()
+		public function ScheduleEvent(name:String, eventType:String, location:EventLocation, startTime:Date, endTime:Date)
 		{
-			
+			this.name = name;
+			this.eventType = eventType;
+			this.location = location;
+			this.startTime = startTime;
+			this.endTime = endTime;
 		}
-
 	}
 }

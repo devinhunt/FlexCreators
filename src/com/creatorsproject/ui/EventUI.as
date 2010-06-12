@@ -17,7 +17,6 @@ package com.creatorsproject.ui
 		}
 		
 		
-		
 		/**
 		 * Required by ITickable 
 		 * Called during a render tick
