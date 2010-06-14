@@ -4,6 +4,7 @@
 
 	<mx:Script>
 		<![CDATA[
+			import com.creatorsproject.ui.EventUI;
 			import com.creatorsproject.data.Schedule;
 			import com.creatorsproject.data.EventRoom;
 			import com.creatorsproject.data.ScheduleEvent;
@@ -20,6 +21,7 @@
 			public static const URL_SCHEDULE:String = "api/schedule";
 			public static const URL_CREATOR:String = "api/creator";
 			public static const URL_ROOM:String = "api/room";
+			public static const URL_FLOOR:String = "api/floor";
 		
 			// 3D!
 			private var _viewport:Viewport3D;
@@ -38,6 +40,8 @@
 			public function initData():void {
 				_schedule = new Schedule();
 				_schedule.requestSchedule();
+				
+				_schedule.addEventListener(Event.COMPLETE, this.initEventDemo);
 			}
 			
 			public function init3D():void {
@@ -47,6 +51,7 @@
 				_camera = new Camera3D();
 				
 				this.paperBuffer.addChild(_viewport);
+				
 				
 				this.addEventListener(Event.ENTER_FRAME, this.onRenderTick); 
 			}
@@ -71,8 +76,9 @@
 			/**********************
 			 *     EVENT DEMO     *
 			 **********************/
-			public function initEventDemo():void {
-				var schedule:Schedule = new Schedule();
+			public function initEventDemo(event:Event = null):void {
+				var eventUI:EventUI = new EventUI(_schedule);
+				_scene.addChild(eventUI);
 			}
 		]]>
 	</mx:Script>

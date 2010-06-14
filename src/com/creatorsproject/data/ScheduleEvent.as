@@ -5,6 +5,9 @@ package com.creatorsproject.data
 	public class ScheduleEvent
 	{
 		
+		/** The PK id of the event on the live server */
+		public var id:String;
+		
 		/** The name of the event */		
 		public var name:String;
 		
@@ -20,8 +23,9 @@ package com.creatorsproject.data
 		/** ID of the creator for this event */
 		public var creatorId:String;
 		
-		public function ScheduleEvent(name:String, roomId:String, creatorId:String, startTime:Date, endTime:Date)
+		public function ScheduleEvent(id:String, name:String, roomId:String, creatorId:String, startTime:Date, endTime:Date)
 		{
+			this.id = id;
 			this.name = name;
 			this.roomId = roomId;
 			this.creatorId = creatorId;
@@ -36,7 +40,8 @@ package com.creatorsproject.data
 		public static function createEventFromJson(rawEvent:Object):ScheduleEvent {
 			
 			
-			return new ScheduleEvent(rawEvent.fields.name, 
+			return new ScheduleEvent(rawEvent.pk,
+										rawEvent.fields.name, 
 										rawEvent.fields.room, 
 										rawEvent.fields.creator,
 										dateFromJSON(rawEvent.fields.start),

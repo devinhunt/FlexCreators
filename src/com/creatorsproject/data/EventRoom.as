@@ -7,13 +7,19 @@ package com.creatorsproject.data
 	 */	
 	public class EventRoom
 	{
+		public var id:String;
 		public var floorId:String;
 		public var name:String;
 		
-		public function EventRoom(name:String, floo:String)
+		public var events:Array;
+		
+		public function EventRoom(id:String, name:String, floor:String)
 		{
-			this.floor = floor;
-			this.name = room;
+			this.id = id;
+			this.name = name;
+			this.floorId = floor;
+			
+			events = [];
 		}
 	}
 }
