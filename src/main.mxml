@@ -4,6 +4,9 @@
 
 	<mx:Script>
 		<![CDATA[
+			import org.papervision3d.objects.DisplayObject3D;
+			import com.creatorsproject.geom.TileBand;
+			import org.papervision3d.core.geom.renderables.Vertex3D;
 			import com.creatorsproject.ui.EventUI;
 			import com.creatorsproject.data.Schedule;
 			import com.creatorsproject.data.EventRoom;
@@ -58,9 +61,12 @@
 			
 			public function onRenderTick(event:Event):void {
 				
-				for each(var t:ITickable in _scene.children) {
-					t.tick();
+				for each(var t:DisplayObject3D in _scene.children) {
+					if(t is ITickable) {
+						(t as ITickable).tick();
+					}
 				}
+				
 				
 				_renderer.renderScene(_scene, _camera, _viewport);
 			}
@@ -79,6 +85,13 @@
 			public function initEventDemo(event:Event = null):void {
 				var eventUI:EventUI = new EventUI(_schedule);
 				_scene.addChild(eventUI);
+				
+				var mat = new ColorMaterial();
+				var curve = [new Vertex3D(0, 0, 0), new Vertex3D(100, 0, 0), new Vertex3D(100, 0, -100), new Vertex3D(200, 0, -100)];
+				var tile:TileBand = new TileBand(mat, curve);
+				tile.pitch(-33);
+				tile.yaw(-33);
+				_scene.addChild(tile);
 			}
 		]]>
 	</mx:Script>

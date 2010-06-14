@@ -26,6 +26,9 @@ package com.creatorsproject.data
 		/** All the floors in the party */
 		private var _floors:Array;
 		
+		private var _startDate:Date;
+		private var _endDate:Date;
+		
 		// TEMP TODO :: ^ Refactor the _**item** storage to a hashtable if order becomes unimportant
 		
 		// Raw data store //
@@ -78,6 +81,24 @@ package com.creatorsproject.data
 						room.events.push(e);
 					}
 				}
+			}
+			
+			// and set out constants;
+			if(_events.length > 0) {
+				var sd:Date = new Date((_events[0] as ScheduleEvent).startTime.getTime());
+				var ed:Date = new Date((_events[0] as ScheduleEvent).endTime.getTime());
+				
+				for each(var ev:ScheduleEvent in _events) {
+					if(ev.startTime.getTime() < sd.getTime()) {
+						sd.setTime(ev.startTime.getTime());
+					}
+					
+					if(ev.endTime.getTime() > ed.getTime()) {
+						ed.setTime(ev.endTime.getTime());
+					}
+				}
+				_startDate = sd
+				_endDate = ed;
 			}
 			
 			// and we're done!
@@ -141,11 +162,11 @@ package com.creatorsproject.data
 		
 		// ------------------------------------------------ GETTERS AND SETTERS
 		public function get startDate():Date {
-			return new Date();
+			return _startDate;
 		}
 		
 		public function get endDate():Date {
-			return new Date();
+			return _endDate;
 		}
 		
 		/**
