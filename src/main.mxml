@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <mx:WindowedApplication xmlns:mx="http://www.adobe.com/2006/mxml" layout="absolute" title="Creators Project" backgroundColor="0xffffff"
-	applicationComplete="init3D()">
+	applicationComplete="go()">
 
 	<mx:Script>
 		<![CDATA[
 			import com.creatorsproject.data.Schedule;
-			import com.creatorsproject.data.EventLocation;
+			import com.creatorsproject.data.EventRoom;
 			import com.creatorsproject.data.ScheduleEvent;
 			import com.creatorsproject.ui.ITickable;
 			import org.papervision3d.materials.utils.MaterialsList;
@@ -15,18 +15,29 @@
 			import org.papervision3d.scenes.Scene3D;
 			import org.papervision3d.render.BasicRenderEngine;
 			import org.papervision3d.view.Viewport3D;
+			
+			public static const URL_SERVER:String = "http://localhost:8000/";
+			public static const URL_SCHEDULE:String = "api/schedule";
+			public static const URL_CREATOR:String = "api/creator";
+			public static const URL_ROOM:String = "api/room";
 		
+			// 3D!
 			private var _viewport:Viewport3D;
 			private var _renderer:BasicRenderEngine;
 			private var _scene:Scene3D;
 			private var _camera:Camera3D;
 			
-			public function toggleFullscreen():void {
-				if(stage.displayState == StageDisplayState.NORMAL) {
-					stage.displayState = StageDisplayState.FULL_SCREEN_INTERACTIVE;
-				} else {
-					stage.displayState = StageDisplayState.NORMAL;
-				}
+			// Data!
+			private var _schedule:Schedule;
+			
+			public function go():void {
+				this.initData();
+				this.init3D();
+			}
+			
+			public function initData():void {
+				_schedule = new Schedule();
+				_schedule.requestSchedule();
 			}
 			
 			public function init3D():void {
@@ -49,17 +60,19 @@
 				_renderer.renderScene(_scene, _camera, _viewport);
 			}
 			
+			public function toggleFullscreen():void {
+				if(stage.displayState == StageDisplayState.NORMAL) {
+					stage.displayState = StageDisplayState.FULL_SCREEN_INTERACTIVE;
+				} else {
+					stage.displayState = StageDisplayState.NORMAL;
+				}
+			}
+			
 			/**********************
 			 *     EVENT DEMO     *
 			 **********************/
 			public function initEventDemo():void {
 				var schedule:Schedule = new Schedule();
-				
-				var e1:ScheduleEvent = new ScheduleEvent("Diplo Live", "Live Music", 
-															new EventLocation("Loading Dock", ""), 
-															new Date("Sat Jun 12 2010 10:00:00 PM"),
-															new Date("Sat Jun 12 2010 12:00:00 PM"));
-				
 			}
 		]]>
 	</mx:Script>
