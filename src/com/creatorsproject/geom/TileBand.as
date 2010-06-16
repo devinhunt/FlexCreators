@@ -17,6 +17,8 @@ package com.creatorsproject.geom
 		private var _height:Number;
 		private var _segWidth:Number;
 		
+		public var data:Object;
+		
 		public function TileBand(material:MaterialObject3D, curve:Array, height:Number = 100, segWidth:Number = 100)
 		{
 			super(material, new Array(), new Array(), null);
@@ -52,15 +54,15 @@ package com.creatorsproject.geom
 				verts.push(d);
 				
 				// first face: tl tr bl
-				uvA = new NumberUV(p * _segWidth, 0);
-				uvB = new NumberUV((p + 1) * _segWidth, 0);
-				uvC = new NumberUV(p * _segWidth, _height);
+				uvA = new NumberUV(p / (_curve.length - 1), 0);
+				uvB = new NumberUV((p + 1) / (_curve.length - 1), 0);
+				uvC = new NumberUV(p / (_curve.length - 1), 1);
 				faces.push(new Triangle3D(this, [a, c, b], this.material, [uvA, uvB, uvC]));
 				
 				// second face: bl tr br
-				uvA = new NumberUV(p * _segWidth, _height);
-				uvB = new NumberUV((p + 1) * _segWidth, 0);
-				uvC = new NumberUV((p + 1) * _segWidth, _height);
+				uvA = new NumberUV(p / (_curve.length - 1), 1);
+				uvB = new NumberUV((p + 1) / (_curve.length - 1), 0);
+				uvC = new NumberUV((p + 1) / (_curve.length - 1), 1);
 				faces.push(new Triangle3D(this, [b, c, d], this.material, [uvA, uvB, uvC]));
 			}
 		}

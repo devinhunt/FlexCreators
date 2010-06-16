@@ -1,0 +1,43 @@
+package com.creatorsproject.ui
+{
+	import flash.display.MovieClip;
+	import flash.text.TextField;
+	import flash.text.TextFormat;
+
+	public class ScheduleMarker extends MovieClip
+	{
+		// private var _title:String;
+		// private var _width:Number;
+		// private var _height:Number;
+		
+		public function ScheduleMarker(title:String, format:TextFormat = null, w:Number = 100, h:Number = 100)
+		{
+			super();
+			
+			this.name = title;
+			
+			this.graphics.beginFill(0x000000);
+			this.graphics.drawRect(0, 0, w, h);
+			this.graphics.moveTo(w, h / 2 - 10);
+			this.graphics.lineTo(w + 10, h / 2);
+			this.graphics.lineTo(w, h / 2 + 10);
+			this.graphics.endFill();
+			
+			var text:TextField = new TextField();
+			text.wordWrap = true;
+			text.width = w;
+			text.height = h;
+			text.multiline = true;
+			text.htmlText = title;
+			
+			if(format) {
+				text.setTextFormat(format);
+			} else {
+				var f:TextFormat = new TextFormat(null, null, 0xffffff);
+				text.setTextFormat(f);
+			}
+			
+			this.addChild(text);
+		}
+	}
+}

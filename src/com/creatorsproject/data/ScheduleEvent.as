@@ -33,10 +33,17 @@ package com.creatorsproject.data
 			this.endTime = endTime;
 		}
 		
+		//_________________________________________________ Getter and Setters
+		
+		/** The duration of the event in hours */
+		public function get duration():Number { 
+			return (endTime.getTime() - startTime.getTime()) / 1000 / 60 / 60;
+		}
+		
 		/**
 		 * Static event to add object creation 
 		 * @param rawEvent The raw event object model
-		 */		
+		 */				
 		public static function createEventFromJson(rawEvent:Object):ScheduleEvent {
 			
 			

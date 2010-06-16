@@ -1,9 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
-<mx:WindowedApplication xmlns:mx="http://www.adobe.com/2006/mxml" layout="absolute" title="Creators Project" backgroundColor="0xffffff"
-	applicationComplete="go()">
+<mx:WindowedApplication xmlns:mx="http://www.adobe.com/2006/mxml" layout="absolute" title="Creators Project" backgroundColor="0xffffff" width="1024" height="768"
+	applicationComplete="go()" xmlns:textures="com.creatorsproject.ui.textures.*">
 
 	<mx:Script>
 		<![CDATA[
+			import com.creatorsproject.ui.ScheduleMarker;
+			import com.creatorsproject.ui.textures.TextTexture;
+			import org.papervision3d.materials.MovieMaterial;
+			import com.creatorsproject.ui.textures.TextTexture;
 			import org.papervision3d.objects.DisplayObject3D;
 			import com.creatorsproject.geom.TileBand;
 			import org.papervision3d.core.geom.renderables.Vertex3D;
@@ -25,6 +29,9 @@
 			public static const URL_CREATOR:String = "api/creator";
 			public static const URL_ROOM:String = "api/room";
 			public static const URL_FLOOR:String = "api/floor";
+			
+			// Singletoning!
+			public static var instance:main;
 		
 			// 3D!
 			private var _viewport:Viewport3D;
@@ -36,6 +43,7 @@
 			private var _schedule:Schedule;
 			
 			public function go():void {
+				instance = this;
 				this.initData();
 				this.init3D();
 			}
@@ -53,8 +61,7 @@
 				_scene = new Scene3D();
 				_camera = new Camera3D();
 				
-				this.paperBuffer.addChild(_viewport);
-				
+				this.backUI.addChild(_viewport);
 				
 				this.addEventListener(Event.ENTER_FRAME, this.onRenderTick); 
 			}
@@ -66,6 +73,9 @@
 						(t as ITickable).tick();
 					}
 				}
+				
+				if(eventUI)
+					//eventUI.rotationY = (this.stage.mouseX / this.stage.stageWidth) * 360;
 				
 				
 				_renderer.renderScene(_scene, _camera, _viewport);
@@ -79,23 +89,51 @@
 				}
 			}
 			
+			
 			/**********************
 			 *     EVENT DEMO     *
 			 **********************/
+			private var eventUI:EventUI;
 			public function initEventDemo(event:Event = null):void {
-				var eventUI:EventUI = new EventUI(_schedule);
+				eventUI = new EventUI(_schedule);
 				_scene.addChild(eventUI);
+				eventUI.y = 100;
+				eventUI.z = 1300;
+				eventUI.rotationY = -200;
 				
-				var mat = new ColorMaterial();
-				var curve = [new Vertex3D(0, 0, 0), new Vertex3D(100, 0, 0), new Vertex3D(100, 0, -100), new Vertex3D(200, 0, -100)];
-				var tile:TileBand = new TileBand(mat, curve);
-				tile.pitch(-33);
-				tile.yaw(-33);
-				_scene.addChild(tile);
+				
+				this.stage.addEventListener(MouseEvent.MOUSE_DOWN, onMouseDown);
+				this.stage.addEventListener(MouseEvent.MOUSE_UP, onMouseUp);
+			}
+			
+			
+			// moving stuff
+			
+			var lastMouseX:Number = 0;
+			
+			private function onMouseDown(event:Event = null):void {
+				this.addEventListener(MouseEvent.MOUSE_MOVE, onMouseMove);
+				lastMouseX = this.stage.mouseX;
+			}
+			
+			private function onMouseMove(event:Event = null):void {
+				var minDeg:Number = 100;
+				var maxDeg:Number = 140;
+				var mouseX:Number = this.stage.mouseX;
+				var delta = mouseX - lastMouseX;
+				lastMouseX = mouseX;
+				
+				eventUI.yaw(- delta / 30);
+				eventUI.rotationY = Math.max(40, Math.min(80, eventUI.rotationY));
+			}
+			
+			private function onMouseUp(event:Event = null):void {
+				this.removeEventListener(MouseEvent.MOUSE_MOVE, onMouseMove);
 			}
 		]]>
 	</mx:Script>
 	
-	<mx:UIComponent id="paperBuffer" width="100%" height="100%" opaqueBackground="0xffffff"/>
+	<mx:UIComponent id="backUI" width="100%" height="100%" opaqueBackground="0xffffff"/>
+	<mx:UIComponent id="frontUI" width="100%" height="100%" />
 	<mx:Button label="Toggle your screen" right="10" bottom = "10" click="this.toggleFullscreen()"/>
 </mx:WindowedApplication>

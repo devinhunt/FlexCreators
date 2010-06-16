@@ -41,7 +41,7 @@ package com.creatorsproject.data
 			_events = [];
 		}
 		
-		// ------------------------------------------------ Schedule Updateting
+		// ______________________________________ Schedule Updateting
 		/**
 		 * Starts the schedule building requests. The data model is requested in this order:
 		 * 1) Floors
@@ -160,7 +160,7 @@ package com.creatorsproject.data
 			trace("There has been an IOError");
 		}
 		
-		// ------------------------------------------------ GETTERS AND SETTERS
+		// ------------------------------------------------ Getters and Setters
 		public function get startDate():Date {
 			return _startDate;
 		}
@@ -174,8 +174,11 @@ package com.creatorsproject.data
 		 * 
 		 */		
 		public function get totalHours():Number {
-			// TEMP TODO set the hours dynamically
-			return 10;
+			return (_endDate.getTime() - _startDate.getTime()) / 1000 / 60 / 60;
 		}
+		
+		public function get floors():Array { return _floors; }
+		public function get rooms():Array { return _rooms; }
+		public function get events():Array { return _events; }
 	}
 }
