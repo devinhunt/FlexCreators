@@ -6,6 +6,7 @@ package com.creatorsproject.ui
 	import com.creatorsproject.data.ScheduleEvent;
 	import com.creatorsproject.geom.TileBand;
 	
+	import flash.display.Graphics;
 	import flash.display.MovieClip;
 	import flash.text.TextField;
 	
@@ -28,14 +29,20 @@ package com.creatorsproject.ui
 		/** The curve that schedule tiles follow */
 		private var _curve:Array;
 		
-		/** The root schedule of floor bands */
+		/** The 3D root schedule of floor bands */
 		private var _floorBands:DisplayObject3D;
+		
+		/** The 3D root of the room schedule */
+		private var _roomBands:DisplayObject3D;
 		
 		/** Current items in the front UI */
 		private var _liveMarkers:Array;
 		
-		/** chache of all the markers we've built */
-		private var _markers:Object;
+		/** cache of all the markers we've built */
+		private var _markerCache:Object;
+		
+		/** cache of all the room schedule bands */
+		private var _roomCache:Object;
 		
 		/** current state of the schedule ui */
 		private var _state:String;
@@ -51,10 +58,10 @@ package com.creatorsproject.ui
 		{
 			_schedule = schedule;
 			_liveMarkers = [];
-			_markers = new Object();
-			
-			this.buildFloorUI();
-			this.state = "default";
+			_roomCache = new Object();
+			_markerCache = new Object();
+			this.buildCurve();
+			this.state = "floors";
 		}
 		
 		// ________________________________________________ Stating and Updating
@@ -83,19 +90,24 @@ package com.creatorsproject.ui
 			trace("Event UI :: Changing to state " + value);
 			
 			switch(_state) {
-				case "default":
-					break;2
+				case "floors":
+					if(! _floorBands) {
+						this.assembleFloorUI();
+					}
+					this.addChild(_floorBands);
+					break;
 				case "floorSelect":
+					this.assembleRoomUI(_targetFloor);
+					this.state = "floorToRoom";
+					break;
+				case "floorToRoom":
+					this.state = "rooms";
+					break;
+				case "rooms":
+					this.removeChild(_floorBands);
+					this.addChild(_roomBands);
 					break;
 			}
-		}
-		
-		private function displayFloorBands():void {
-			
-		}
-		
-		private function displayRoomBands():void {
-			
 		}
 		
 		// ________________________________________________ User Interaction
@@ -108,20 +120,7 @@ package com.creatorsproject.ui
 		}
 		
 		// ________________________________________________ Building UI 
-		protected function buildFloorUI():void {
-			// generate the curve the grid follows on
-			var curve:Array = [];
-			var totalHours:Number = _schedule.totalHours;
-			
-			var segments:int = int(totalHours / _timeGranularity);
-			var radius:Number = 2000;
-			var step:Number = Math.atan2(_widthPerHour * _timeGranularity, radius);
-			
-			for (var seg:int = 0; seg < segments + 1; seg ++) {
-				curve.push(new Vertex3D(radius * Math.cos(step * seg), 0, radius * Math.sin(step * seg)));
-			}
-			_curve = curve;
-			
+		protected function assembleFloorUI():void {
 			
 			// build the floor bands
 			_floorBands = new DisplayObject3D();
@@ -139,17 +138,46 @@ package com.creatorsproject.ui
 				
 				band.addEventListener(InteractiveScene3DEvent.OBJECT_CLICK, onFloorBandClick);
 				band.data = _schedule.floors[f];
+				band.name = _schedule.floors[f].name;
 				_floorBands.addChild(band);
 				labels.push((_schedule.floors[f] as EventFloor).name);
 			}
 			
 			this.showMarkers(labels);
-			this.addChild(_floorBands);
 		}
 		
-		protected function buildRoomUI():void {
+		protected function assembleRoomUI(floor:EventFloor):void {
+			if(!_roomBands) {
+				_roomBands = new DisplayObject3D();
+			}
 			
-		}		
+			while(_roomBands.numChildren > 0) {
+				_roomBands.removeChild(_roomBands.children[0]);
+			}
+			
+			for(var r:int = 0; r < floor.rooms.length; r ++) {
+				var band:TileBand = this.getRoomBand(floor.rooms[r]);
+				
+				band.y = -105 * r;
+				_roomBands.addChild(band);
+			}
+		}
+		
+		protected function getRoomBand(room:EventRoom):TileBand {
+			if(! _roomCache[room.name]) {
+				var tex:MovieClip = this.makeRoomTexture(room);
+				var mat:MovieMaterial = new MovieMaterial(tex, false, false, true);
+				mat.smooth = true;
+				mat.interactive = true;
+				var band:TileBand = new TileBand(mat, _curve);
+				band.data = room;
+				_roomCache[room.name] = band;
+			}
+			
+			return _roomCache[room.name];
+		}
+		
+		
 		
 		/**
 		 * Builds a long texture to be applied to a solid plane 
@@ -167,31 +195,69 @@ package com.creatorsproject.ui
 			tex.graphics.endFill();
 			
 			for(var r:int = 0; r < floor.rooms.length; r++) {
-				var room:EventRoom = floor.rooms[r];
-				
-				for(var e:int = 0; e < room.events.length; e ++) {
-					var event:ScheduleEvent = room.events[e];
-					var startHr:Number = (event.startTime.getTime() - _schedule.startDate.getTime()) / 1000 / 60 / 60;
-					var endHr:Number = (event.endTime.getTime() - _schedule.startDate.getTime()) / 1000 / 60 / 60;
-					
-					tex.graphics.beginFill(0xff00ff);
-					tex.graphics.drawRect(startHr * _widthPerHour, 
-											(texHeight / floor.rooms.length) * r, 
-											(endHr - startHr) * _widthPerHour,
-											(texHeight / floor.rooms.length));
-					tex.graphics.endFill();
-					
-					// add in the text for this bad boy
-					var text:TextField = new TextField();
-					text.htmlText = event.name;
-					text.x = startHr * _widthPerHour + 5;
-					text.y = (texHeight / floor.rooms.length) * r + 5;
-					text.height = (texHeight / floor.rooms.length) - 5;
-					tex.addChild(text); 
-				}
+				this.drawRoomTex(tex, floor.rooms[r], (texHeight / floor.rooms.length) * r, (texHeight / floor.rooms.length));
 			}
 			
 			return tex;
+		}
+		
+		/**
+		 * Creates a texture to be applied to a room band 
+		 * @param room The room we're displaying with this texture
+		 * @param texHeight The height of the texture
+		 * @return 
+		 * 
+		 */		
+		private function makeRoomTexture(room:EventRoom, texHeight:Number = 100):MovieClip {
+			var tex:MovieClip = new MovieClip();
+			
+			tex.graphics.beginFill(0x555555);
+			tex.graphics.drawRect(0, 0, _schedule.totalHours * _widthPerHour, texHeight);
+			tex.graphics.endFill();
+			
+			this.drawRoomTex(tex, room, 0, texHeight);
+			
+			return tex;
+		}
+		
+		private function drawRoomTex(parent:MovieClip, room:EventRoom, top:Number, height:Number):void {
+			var g:Graphics = parent.graphics;
+			for(var e:int = 0; e < room.events.length; e ++) {
+				var event:ScheduleEvent = room.events[e];
+					var startHr:Number = (event.startTime.getTime() - _schedule.startDate.getTime()) / 1000 / 60 / 60;
+					var endHr:Number = (event.endTime.getTime() - _schedule.startDate.getTime()) / 1000 / 60 / 60;
+					
+					g.beginFill(0xff00ff);
+					g.drawRect(startHr * _widthPerHour, 
+											top, 
+											(endHr - startHr) * _widthPerHour,
+											height);
+					g.endFill();
+					
+					
+					var text:TextField = new TextField();
+					text.htmlText = event.name;
+					text.x = startHr * _widthPerHour + 5;
+					text.y = top + 5;
+					text.height = height - 5;
+					parent.addChild(text); 
+			}
+		}
+		
+		// ________________________________________________ Curve Genereation
+		
+		private function buildCurve():void {
+			var curve:Array = [];
+			var totalHours:Number = _schedule.totalHours;
+			
+			var segments:int = int(totalHours / _timeGranularity);
+			var radius:Number = 2000;
+			var step:Number = Math.atan2(_widthPerHour * _timeGranularity, radius);
+			
+			for (var seg:int = 0; seg < segments + 1; seg ++) {
+				curve.push(new Vertex3D(radius * Math.cos(step * seg), 0, radius * Math.sin(step * seg)));
+			}
+			_curve = curve;
 		}
 		
 		/**
@@ -203,7 +269,7 @@ package com.creatorsproject.ui
 			return Math.max(0, Math.min(_curve.length - 1, hours / _timeGranularity));
 		}
 		
-		// ______________________________________ Markers
+		// ________________________________________________ Markers
 		
 		/**
 		 * Displays markers on the front UI for the current display 
@@ -228,10 +294,10 @@ package com.creatorsproject.ui
 		}
 		
 		private function getMarker(label:String):ScheduleMarker {
-			if(! _markers[label]) {
-				_markers[label] = new ScheduleMarker(label);
+			if(! _markerCache[label]) {
+				_markerCache[label] = new ScheduleMarker(label);
 			}
-			return _markers[label] as ScheduleMarker;
+			return _markerCache[label] as ScheduleMarker;
 		}		
 	}
 }
