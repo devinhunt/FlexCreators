@@ -7,8 +7,13 @@ package com.creatorsproject.data
 	import flash.events.IOErrorEvent;
 	import flash.net.URLLoader;
 	import flash.net.URLRequest;
+
+	/**
+	 * Loader and organizer for the data that powers this little app. 
+	 * @author devin
+	 */		
 	
-	public class Schedule extends EventDispatcher
+	public class PartyData extends EventDispatcher
 	{
 		
 		/** True if we have asked the server for a schedule */		
@@ -16,6 +21,8 @@ package com.creatorsproject.data
 		
 		/** True if we have recieved and parsed the latest schedule data */
 		private var _sceduleRecieved:Boolean = false;
+		
+		private var _creatorsRecieved:Boolean = false;
 		
 		/** List of all individule events */
 		private var _events:Array;
@@ -26,6 +33,9 @@ package com.creatorsproject.data
 		/** All the floors in the party */
 		private var _floors:Array;
 		
+		/** Creators involved with this party */
+		private var _creators:Array;
+		
 		private var _startDate:Date;
 		private var _endDate:Date;
 		
@@ -35,13 +45,14 @@ package com.creatorsproject.data
 		private var _rawEventData:Object;
 		private var _rawRoomData:Object;
 		private var _rawFloorData:Object;
+		private var _rawCreatorData:Object;
 		
-		public function Schedule()
+		public function PartyData()
 		{
 			_events = [];
 		}
 		
-		// ______________________________________ Schedule Updateting
+		// ______________________________________ Data Updateting
 		/**
 		 * Starts the schedule building requests. The data model is requested in this order:
 		 * 1) Floors
@@ -50,12 +61,20 @@ package com.creatorsproject.data
 		 * And the the full schedule tree is reconsistuted. This makes the processing quick and efficient and allows
 		 * us to keep our json requests to a minimum.
 		 */
-		public function requestSchedule():void {
+		public function loadData():void {
 			_scheduleRequested = true;
+			_creatorsRecieved = false;
+			_sceduleRecieved = false;
+			
 			var floorLoader:URLLoader = new URLLoader();
 			floorLoader.addEventListener(Event.COMPLETE, this.onFloorsReceived);
 			floorLoader.addEventListener(IOErrorEvent.IO_ERROR, this.onJsonIOError);
 			floorLoader.load(new URLRequest(main.URL_SERVER + main.URL_FLOOR));
+			
+			var creatorLoader:URLLoader = new URLLoader();
+			creatorLoader.addEventListener(Event.COMPLETE, this.onCreatorsRecieved);
+			creatorLoader.addEventListener(IOErrorEvent.IO_ERROR, this.onJsonIOError);
+			creatorLoader.load(new URLRequest(main.URL_SERVER + main.URL_CREATOR));
 		}
 		
 		/**
@@ -103,7 +122,9 @@ package com.creatorsproject.data
 			
 			// and we're done!
 			this._sceduleRecieved = true;
-			this.dispatchEvent(new Event(Event.COMPLETE));
+			if(_creatorsRecieved) {
+				this.dispatchEvent(new Event(Event.COMPLETE));
+			}
 		}
 		
 		public function onRoomsRevieved(event:Event):void {
@@ -152,6 +173,24 @@ package com.creatorsproject.data
 			roomLoader.load(new URLRequest(main.URL_SERVER + main.URL_ROOM));
 		}
 		
+		public function onCreatorsRecieved(event:Event):void {
+			(event.target as URLLoader).removeEventListener(Event.COMPLETE, this.onCreatorsRecieved);
+			(event.target as URLLoader).removeEventListener(IOErrorEvent.IO_ERROR, this.onJsonIOError);
+			
+			var rawData:String = (event.target as URLLoader).data;
+			_rawCreatorData = JSON.decode(rawData)
+			_creators = [];
+			
+			for each(var rawCreator:Object in _rawCreatorData) {
+				_creators.push(new Creator(rawCreator));
+			}
+			
+			this._creatorsRecieved = true;
+			if(_sceduleRecieved) {
+				this.dispatchEvent(new Event(Event.COMPLETE));
+			}
+		}
+		
 		/**
 		 * Oh shit something went wrong with the JSON request
 		 * @param event
@@ -180,5 +219,6 @@ package com.creatorsproject.data
 		public function get floors():Array { return _floors; }
 		public function get rooms():Array { return _rooms; }
 		public function get events():Array { return _events; }
+		public function get creators():Array { return _creators; }
 	}
 }

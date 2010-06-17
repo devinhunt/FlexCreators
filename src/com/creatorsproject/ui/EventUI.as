@@ -2,7 +2,7 @@ package com.creatorsproject.ui
 {
 	import com.creatorsproject.data.EventFloor;
 	import com.creatorsproject.data.EventRoom;
-	import com.creatorsproject.data.Schedule;
+	import com.creatorsproject.data.PartyData;
 	import com.creatorsproject.data.ScheduleEvent;
 	import com.creatorsproject.geom.TileBand;
 	
@@ -20,7 +20,7 @@ package com.creatorsproject.ui
 	{
 		
 		/** The schedule model we're displaying */
-		private var _schedule:Schedule;
+		private var _schedule:PartyData;
 		
 		private var _widthPerHour:Number = 200;
 		
@@ -55,7 +55,7 @@ package com.creatorsproject.ui
 		 * Default Constructor 
 		 * 
 		 */		
-		public function EventUI(schedule:Schedule)
+		public function EventUI(schedule:PartyData)
 		{
 			_schedule = schedule;
 			_liveMarkers = [];
@@ -158,6 +158,7 @@ package com.creatorsproject.ui
 				_roomBands = new DisplayObject3D();
 			}
 			
+			// reset the object map
 			var kids:Object = _roomBands.children;
 			for each(var kid:DisplayObject3D in kids) {
 				_roomBands.removeChild(kid);

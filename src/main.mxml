@@ -4,6 +4,7 @@
 
 	<mx:Script>
 		<![CDATA[
+			import com.creatorsproject.ui.CreatorUI;
 			import com.creatorsproject.ui.ScheduleMarker;
 			import com.creatorsproject.ui.textures.TextTexture;
 			import org.papervision3d.materials.MovieMaterial;
@@ -12,7 +13,7 @@
 			import com.creatorsproject.geom.TileBand;
 			import org.papervision3d.core.geom.renderables.Vertex3D;
 			import com.creatorsproject.ui.EventUI;
-			import com.creatorsproject.data.Schedule;
+			import com.creatorsproject.data.PartyData;
 			import com.creatorsproject.data.EventRoom;
 			import com.creatorsproject.data.ScheduleEvent;
 			import com.creatorsproject.ui.ITickable;
@@ -40,7 +41,7 @@
 			private var _camera:Camera3D;
 			
 			// Data!
-			private var _schedule:Schedule;
+			private var _partyData:PartyData;
 			
 			public function go():void {
 				instance = this;
@@ -49,10 +50,10 @@
 			}
 			
 			public function initData():void {
-				_schedule = new Schedule();
-				_schedule.requestSchedule();
+				_partyData = new PartyData();
+				_partyData.loadData();
 				
-				_schedule.addEventListener(Event.COMPLETE, this.initEventDemo);
+				_partyData.addEventListener(Event.COMPLETE, this.initCreatorDemo);
 			}
 			
 			public function init3D():void {
@@ -74,8 +75,11 @@
 					}
 				}
 				
-				if(eventUI)
+				//if(eventUI)
 					//eventUI.rotationY = (this.stage.mouseX / this.stage.stageWidth) * 360;
+				
+				if(creatorUI)
+					creatorUI.yaw(2);
 				
 				
 				_renderer.renderScene(_scene, _camera, _viewport);
@@ -89,13 +93,22 @@
 				}
 			}
 			
+			/************************
+			 *     CREATOR DEMO     *
+			 ************************/
+			private var creatorUI:CreatorUI;
+			public function initCreatorDemo(event:Event = null):void {
+				creatorUI = new CreatorUI(_partyData.creators);
+				_scene.addChild(creatorUI);
+				
+			}
 			
 			/**********************
 			 *     EVENT DEMO     *
 			 **********************/
 			private var eventUI:EventUI;
 			public function initEventDemo(event:Event = null):void {
-				eventUI = new EventUI(_schedule);
+				eventUI = new EventUI(_partyData);
 				_scene.addChild(eventUI);
 				eventUI.y = 100;
 				eventUI.z = 1300;
@@ -109,7 +122,7 @@
 			
 			// moving stuff
 			
-			var lastMouseX:Number = 0;
+			private var lastMouseX:Number = 0;
 			
 			private function onMouseDown(event:Event = null):void {
 				this.addEventListener(MouseEvent.MOUSE_MOVE, onMouseMove);
@@ -120,7 +133,7 @@
 				var minDeg:Number = 100;
 				var maxDeg:Number = 140;
 				var mouseX:Number = this.stage.mouseX;
-				var delta = mouseX - lastMouseX;
+				var delta:int = mouseX - lastMouseX;
 				lastMouseX = mouseX;
 				
 				eventUI.yaw(- delta / 30);
@@ -130,6 +143,7 @@
 			private function onMouseUp(event:Event = null):void {
 				this.removeEventListener(MouseEvent.MOUSE_MOVE, onMouseMove);
 			}
+			
 		]]>
 	</mx:Script>
 	<mx:Canvas id="clickMatte" backgroundColor="0xffffff" width="100%" height="100%" />
