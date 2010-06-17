@@ -4,6 +4,7 @@
 
 	<mx:Script>
 		<![CDATA[
+			import com.creatorsproject.input.TouchController;
 			import com.creatorsproject.ui.CreatorUI;
 			import com.creatorsproject.ui.ScheduleMarker;
 			import com.creatorsproject.ui.textures.TextTexture;
@@ -40,20 +41,26 @@
 			private var _scene:Scene3D;
 			private var _camera:Camera3D;
 			
+			// Interaction!
+			private var _touchController:TouchController;
+			
 			// Data!
 			private var _partyData:PartyData;
+			
+			// ____________________________________________ Application Setup
 			
 			public function go():void {
 				instance = this;
 				this.initData();
 				this.init3D();
+				this.initTouch();
 			}
 			
 			public function initData():void {
 				_partyData = new PartyData();
 				_partyData.loadData();
 				
-				_partyData.addEventListener(Event.COMPLETE, this.initCreatorDemo);
+				_partyData.addEventListener(Event.COMPLETE, this.initEventDemo);
 			}
 			
 			public function init3D():void {
@@ -67,6 +74,12 @@
 				this.addEventListener(Event.ENTER_FRAME, this.onRenderTick); 
 			}
 			
+			public function initTouch():void {
+				_touchController = new TouchController(this.stage);
+			}
+			
+			// ____________________________________________ Rendering and Updating
+			
 			public function onRenderTick(event:Event):void {
 				
 				for each(var t:DisplayObject3D in _scene.children) {
@@ -74,13 +87,6 @@
 						(t as ITickable).tick();
 					}
 				}
-				
-				//if(eventUI)
-					//eventUI.rotationY = (this.stage.mouseX / this.stage.stageWidth) * 360;
-				
-				if(creatorUI)
-					creatorUI.yaw(2);
-				
 				
 				_renderer.renderScene(_scene, _camera, _viewport);
 			}
@@ -92,6 +98,8 @@
 					stage.displayState = StageDisplayState.NORMAL;
 				}
 			}
+			
+			// ____________________________________________ Demos
 			
 			/************************
 			 *     CREATOR DEMO     *
@@ -119,9 +127,6 @@
 				this.stage.addEventListener(MouseEvent.MOUSE_UP, onMouseUp);
 			}
 			
-			
-			// moving stuff
-			
 			private var lastMouseX:Number = 0;
 			
 			private function onMouseDown(event:Event = null):void {
@@ -146,6 +151,7 @@
 			
 		]]>
 	</mx:Script>
+	
 	<mx:Canvas id="clickMatte" backgroundColor="0xffffff" width="100%" height="100%" />
 	<mx:UIComponent id="backUI" width="100%" height="100%" opaqueBackground="0xffffff"/>
 	<mx:UIComponent id="frontUI" width="100%" height="100%" />

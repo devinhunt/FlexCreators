@@ -4,15 +4,15 @@ package com.creatorsproject.data
 	{
 		public var id:String;
 		public var name:String;
-		public var kind:String;
+		public var location:String;
 		public var thumbUrl:String;
 		
 		public function Creator(raw:Object = null)
 		{
 			this.id = raw.pk;
-			this.name = raw.fields.thumbnail;
-			this.kind = raw.fields.kind;
-			this.thumbUrl = raw.fields.thumbnail;
+			this.name = raw.fields.name;
+			this.location = raw.fields.location;
+			this.thumbUrl = raw.fields.local_thumb || raw.fields.remote_thumb;
 		}
 	}
 }

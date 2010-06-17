@@ -69,7 +69,6 @@ package com.creatorsproject.ui
 			}
 			
 			var thetaStep:Number = Math.PI * 2 / _creators.length;
-			trace(Math.tan(thetaStep));
 			var radius:Number = 1.2 * chipWidth / Math.tan(thetaStep);
 			
 			for(var c:int = 0; c < _creators.length; c ++) {
