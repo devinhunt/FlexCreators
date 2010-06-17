@@ -8,6 +8,7 @@ package com.creatorsproject.ui
 	
 	import flash.display.Graphics;
 	import flash.display.MovieClip;
+	import flash.events.MouseEvent;
 	import flash.text.TextField;
 	
 	import org.papervision3d.core.geom.renderables.Vertex3D;
@@ -42,7 +43,7 @@ package com.creatorsproject.ui
 		private var _markerCache:Object;
 		
 		/** cache of all the room schedule bands */
-		private var _roomCache:Object;
+		private var _tilebandCache:Object;
 		
 		/** current state of the schedule ui */
 		private var _state:String;
@@ -58,9 +59,15 @@ package com.creatorsproject.ui
 		{
 			_schedule = schedule;
 			_liveMarkers = [];
-			_roomCache = new Object();
+			_tilebandCache = new Object();
 			_markerCache = new Object();
+			
+			main.instance.clickMatte.addEventListener(MouseEvent.CLICK, onMatteClick);
+			
+			// things we should only need to do once
 			this.buildCurve();
+			this.assembleFloorUI();
+			
 			this.state = "floors";
 		}
 		
@@ -91,9 +98,8 @@ package com.creatorsproject.ui
 			
 			switch(_state) {
 				case "floors":
-					if(! _floorBands) {
-						this.assembleFloorUI();
-					}
+					_targetFloor = null;
+					this.removeChild(_roomBands);
 					this.addChild(_floorBands);
 					break;
 				case "floorSelect":
@@ -107,13 +113,26 @@ package com.creatorsproject.ui
 					this.removeChild(_floorBands);
 					this.addChild(_roomBands);
 					break;
+				case "roomToFloor":
+					this.state = "floors"
+					break;
 			}
 		}
 		
 		// ________________________________________________ User Interaction
 		
+		private function onMatteClick(event:MouseEvent = null):void {
+			trace("hello");
+			switch(_state) {
+				case "rooms":
+					this.state = "roomToFloor";
+					break;
+			}
+		}
+		
 		private function onFloorBandClick(event:InteractiveScene3DEvent = null):void {
 			if(! _targetFloor) {
+				trace("got the floor click");
 				_targetFloor = (event.target as TileBand).data as EventFloor;
 				this.state = "floorSelect";
 			}
@@ -122,28 +141,16 @@ package com.creatorsproject.ui
 		// ________________________________________________ Building UI 
 		protected function assembleFloorUI():void {
 			
-			// build the floor bands
-			_floorBands = new DisplayObject3D();
-			var labels:Array = []
-
-			for(var f:int = 0; f < _schedule.floors.length; f ++) {
-				var tex:MovieClip = this.makeFloorTexture(_schedule.floors[f]);
-				var mat:MovieMaterial = new MovieMaterial(tex, false, false, true);
-				mat.smooth = true;
-				mat.interactive = true;
-				var band:TileBand = new TileBand(mat, _curve);
-				
-				// rough positioning
-				band.y = -105 * f;
-				
-				band.addEventListener(InteractiveScene3DEvent.OBJECT_CLICK, onFloorBandClick);
-				band.data = _schedule.floors[f];
-				band.name = _schedule.floors[f].name;
-				_floorBands.addChild(band);
-				labels.push((_schedule.floors[f] as EventFloor).name);
-			}
+			if(! _floorBands) {
+				_floorBands = new DisplayObject3D();
+			}			
 			
-			this.showMarkers(labels);
+			for(var f:int = 0; f < _schedule.floors.length; f ++) {
+				var band:TileBand = this.getFloorBand(_schedule.floors[f]);
+				band.y = -105 * f;
+				band.addEventListener(InteractiveScene3DEvent.OBJECT_CLICK, this.onFloorBandClick);
+				_floorBands.addChild(band);
+			}
 		}
 		
 		protected function assembleRoomUI(floor:EventFloor):void {
@@ -151,8 +158,9 @@ package com.creatorsproject.ui
 				_roomBands = new DisplayObject3D();
 			}
 			
-			while(_roomBands.numChildren > 0) {
-				_roomBands.removeChild(_roomBands.children[0]);
+			var kids:Object = _roomBands.children;
+			for each(var kid:DisplayObject3D in kids) {
+				_roomBands.removeChild(kid);
 			}
 			
 			for(var r:int = 0; r < floor.rooms.length; r ++) {
@@ -163,18 +171,32 @@ package com.creatorsproject.ui
 			}
 		}
 		
+		protected function getFloorBand(floor:EventFloor):TileBand {
+			if(! _tilebandCache[floor.name]) {
+				var tex:MovieClip = this.makeFloorTexture(floor);
+				var mat:MovieMaterial = new MovieMaterial(tex, false, false, true);
+				mat.smooth = true;
+				mat.interactive = true;
+				var band:TileBand = new TileBand(mat, _curve);
+				band.data = floor;
+				_tilebandCache[floor.name] = band;
+			}
+			
+			return _tilebandCache[floor.name];
+		}
+		
 		protected function getRoomBand(room:EventRoom):TileBand {
-			if(! _roomCache[room.name]) {
+			if(! _tilebandCache[room.name]) {
 				var tex:MovieClip = this.makeRoomTexture(room);
 				var mat:MovieMaterial = new MovieMaterial(tex, false, false, true);
 				mat.smooth = true;
 				mat.interactive = true;
 				var band:TileBand = new TileBand(mat, _curve);
 				band.data = room;
-				_roomCache[room.name] = band;
+				_tilebandCache[room.name] = band;
 			}
 			
-			return _roomCache[room.name];
+			return _tilebandCache[room.name];
 		}
 		
 		
