@@ -4,6 +4,7 @@
 
 	<mx:Script>
 		<![CDATA[
+			import com.creatorsproject.input.events.GestureEvent;
 			import com.creatorsproject.input.TouchController;
 			import com.creatorsproject.ui.CreatorUI;
 			import com.creatorsproject.ui.ScheduleMarker;
@@ -76,6 +77,13 @@
 			
 			public function initTouch():void {
 				_touchController = new TouchController(this.stage);
+				_touchController.addEventListener(GestureEvent.SWIPE_START, onSwipe);
+				_touchController.addEventListener(GestureEvent.SWIPE, onSwipe);
+				_touchController.addEventListener(GestureEvent.SWIPE_END, onSwipe);
+			}
+			
+			private function onSwipe(event:GestureEvent):void {
+				trace("Got event of type " + event.type + " with delta " + event.delta);
 			}
 			
 			// ____________________________________________ Rendering and Updating
