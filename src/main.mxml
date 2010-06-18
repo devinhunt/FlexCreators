@@ -4,6 +4,7 @@
 
 	<mx:Script>
 		<![CDATA[
+			import org.papervision3d.core.math.Number3D;
 			import com.creatorsproject.input.events.GestureEvent;
 			import com.creatorsproject.input.TouchController;
 			import com.creatorsproject.ui.CreatorUI;
@@ -48,11 +49,18 @@
 			// Data!
 			private var _partyData:PartyData;
 			
+			// Interface!
+			public static var EVENT_NODE:String = "eventNode";
+			public static var CREATOR_NODE:String = "creatorNode";
+			public static var MAP_NODE:String = "mapNode";
+			private var _eventUI:EventUI;
+			private var _creatorUI:CreatorUI;
+			
 			// ____________________________________________ Application Setup
 			
 			public function go():void {
 				instance = this;
-				this.initData();
+				this.initData(); // starts the interface automatically on valid data
 				this.init3D();
 				this.initTouch();
 			}
@@ -60,8 +68,7 @@
 			public function initData():void {
 				_partyData = new PartyData();
 				_partyData.loadData();
-				
-				_partyData.addEventListener(Event.COMPLETE, this.initEventDemo);
+				_partyData.addEventListener(Event.COMPLETE, this.initInterface);
 			}
 			
 			public function init3D():void {
@@ -71,7 +78,6 @@
 				_camera = new Camera3D();
 				
 				this.backUI.addChild(_viewport);
-				
 				this.addEventListener(Event.ENTER_FRAME, this.onRenderTick); 
 			}
 			
@@ -82,8 +88,46 @@
 				_touchController.addEventListener(GestureEvent.SWIPE_END, onSwipe);
 			}
 			
-			private function onSwipe(event:GestureEvent):void {
-				trace("Got event of type " + event.type + " with delta " + event.delta);
+			public function initInterface(event:Event = null):void {
+				// build our UI's
+				_eventUI = new EventUI(_partyData);
+				_creatorUI = new CreatorUI(_partyData.creators);
+				var cRad:Number = -2000;
+				//var eTheta:Number = 
+				
+				// setup them up in our world o' fun
+				// First, the events
+				setUIPosition(_eventUI, 0);
+				_scene.addChild(_eventUI);
+				
+				// Second, creators
+				setUIPosition(_creatorUI, Math.PI / 4);
+				_scene.addChild(_creatorUI);
+				
+				// finally, get the camera into place
+				_camera.z = -5000;
+				
+				dump();
+			}
+			
+			private function dump():void {
+				var step = Math.PI / 20;
+				var mat:ColorMaterial = new ColorMaterial();
+				for(var i = 0; i < 40; i ++) {
+					var cube:Cube = new Cube(new MaterialsList({all: mat}), 50, 50, 50);
+					cube.z = -2000 * Math.cos(step * i);
+					cube.y = -2000 * Math.sin(step * i);
+					_scene.addChild(cube);
+				}
+			}
+			
+			private function setUIPosition(ui:DisplayObject3D, theta:Number):void {
+				var thetaDeg:Number = theta / Math.PI * 180;
+				
+				ui.z = -2000 * Math.cos(theta);
+				ui.y = -2000 * Math.sin(theta);
+				
+				ui.rotationX = - (theta / Math.PI * 180);
 			}
 			
 			// ____________________________________________ Rendering and Updating
@@ -96,6 +140,13 @@
 					}
 				}
 				
+				/*
+				var c:Number = _camera.rotationX - .5;
+				_camera.rotationX = c;
+				_camera.z = -5000 * Math.cos(c * Math.PI / 180);
+				_camera.y = 5000 * Math.sin(c * Math.PI / 180);
+				*/
+				
 				_renderer.renderScene(_scene, _camera, _viewport);
 			}
 			
@@ -105,6 +156,17 @@
 				} else {
 					stage.displayState = StageDisplayState.NORMAL;
 				}
+			}
+			
+			// ____________________________________________ Interaction
+			
+			private function onSwipe(event:GestureEvent):void {
+				//trace("Got event of type " + event.type + " with delta " + event.delta);
+				
+				var c:Number = _camera.rotationX + (event.delta.y / 20);
+				_camera.rotationX = c;
+				_camera.z = -5000 * Math.cos(c * Math.PI / 180);
+				_camera.y = 5000 * Math.sin(c * Math.PI / 180);
 			}
 			
 			// ____________________________________________ Demos

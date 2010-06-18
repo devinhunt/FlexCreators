@@ -122,7 +122,6 @@ package com.creatorsproject.ui
 		// ________________________________________________ User Interaction
 		
 		private function onMatteClick(event:MouseEvent = null):void {
-			trace("hello");
 			switch(_state) {
 				case "rooms":
 					this.state = "roomToFloor";
@@ -143,6 +142,7 @@ package com.creatorsproject.ui
 			
 			if(! _floorBands) {
 				_floorBands = new DisplayObject3D();
+				_floorBands.rotationY = 90;
 			}			
 			
 			for(var f:int = 0; f < _schedule.floors.length; f ++) {
