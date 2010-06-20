@@ -25,6 +25,7 @@ package com.creatorsproject.ui
 		
 		public function CreatorUI(creators:Array)
 		{
+			super();
 			_creators = creators;
 			this.assembleCreatorsUI();
 			this.state = "creators";
@@ -59,6 +60,8 @@ package com.creatorsproject.ui
 				
 			}
 		}
+		
+		// ________________________________________________ Interaction
 		
 		// ________________________________________________ Building UI
 		

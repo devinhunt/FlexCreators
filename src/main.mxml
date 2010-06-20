@@ -75,7 +75,7 @@
 				_viewport = new Viewport3D(0, 0, true, true);
 				_renderer = new BasicRenderEngine();
 				_scene = new Scene3D();
-				_camera = new Camera3D();
+				_camera = new Camera3D(30);
 				
 				this.backUI.addChild(_viewport);
 				this.addEventListener(Event.ENTER_FRAME, this.onRenderTick); 
@@ -171,6 +171,7 @@
 				_camera.rotationX = c;
 				_camera.z = -5000 * Math.cos(c * Math.PI / 180);
 				_camera.y = 5000 * Math.sin(c * Math.PI / 180);
+				
 			}
 			
 			// ____________________________________________ Demos

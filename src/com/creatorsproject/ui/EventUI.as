@@ -5,26 +5,27 @@ package com.creatorsproject.ui
 	import com.creatorsproject.data.PartyData;
 	import com.creatorsproject.data.ScheduleEvent;
 	import com.creatorsproject.geom.TileBand;
-	import com.creatorsproject.input.TouchController;
 	import com.creatorsproject.input.events.GestureEvent;
 	
 	import flash.display.Graphics;
 	import flash.display.MovieClip;
 	import flash.events.MouseEvent;
 	import flash.text.TextField;
+	import flash.text.TextFormat;
 	
 	import org.papervision3d.core.geom.renderables.Vertex3D;
 	import org.papervision3d.events.InteractiveScene3DEvent;
 	import org.papervision3d.materials.MovieMaterial;
 	import org.papervision3d.objects.DisplayObject3D;
 	
-	public class EventUI extends DisplayObject3D implements ITickable
+	public class EventUI extends TouchUI implements ITickable
 	{
 		
 		/** The schedule model we're displaying */
 		private var _schedule:PartyData;
 		
 		private var _widthPerHour:Number = 200;
+		private var _bandHeight:Number = 200;
 		
 		/** Step to divide the grid by, in hours */
 		private var _timeGranularity:Number = .5;
@@ -49,6 +50,9 @@ package com.creatorsproject.ui
 		
 		/** current state of the schedule ui */
 		private var _state:String;
+		
+		/** are we currently swiping? */
+		private var _isSwiping:Boolean = false;
 		
 		/** The floor we're expanding on */
 		private var _targetFloor:EventFloor;
@@ -123,16 +127,23 @@ package com.creatorsproject.ui
 		
 		// ________________________________________________ User Interaction
 		
-		private function initTouch():void {
-			TouchController.me.matte.addEventListener(MouseEvent.CLICK, onMatteClick);
-			TouchController.me.addEventListener(GestureEvent.SWIPE, onSwipe);
+		override protected function onSwipe(event:GestureEvent):void {
+			super.onSwipe(event);
+			switch(event.type) {
+				case GestureEvent.SWIPE_START:
+					_isSwiping = true;
+					break;
+				case GestureEvent.SWIPE:
+					this.rotationY += - event.delta.x / 10;
+					break;
+				case GestureEvent.SWIPE_END:
+					_isSwiping = false;
+					break;
+			}
 		}
 		
-		private function onSwipe(event:GestureEvent):void {
-			this.rotationY += - event.delta.x / 10;
-		}
-		
-		private function onMatteClick(event:MouseEvent = null):void {
+		override protected function onMatteClick(event:MouseEvent):void {
+			super.onMatteClick(event);
 			switch(_state) {
 				case "rooms":
 					this.state = "roomToFloor";
@@ -141,7 +152,7 @@ package com.creatorsproject.ui
 		}
 		
 		private function onFloorBandClick(event:InteractiveScene3DEvent = null):void {
-			if(! _targetFloor) {
+			if(! _targetFloor && ! _isSwiping) {
 				trace("got the floor click");
 				_targetFloor = (event.target as TileBand).data as EventFloor;
 				this.state = "floorSelect";
@@ -157,7 +168,7 @@ package com.creatorsproject.ui
 			
 			for(var f:int = 0; f < _schedule.floors.length; f ++) {
 				var band:TileBand = this.getFloorBand(_schedule.floors[f]);
-				band.y = -105 * f;
+				band.y = -205 * f;
 				band.addEventListener(InteractiveScene3DEvent.OBJECT_CLICK, this.onFloorBandClick);
 				_floorBands.addChild(band);
 			}
@@ -176,19 +187,19 @@ package com.creatorsproject.ui
 			for(var r:int = 0; r < floor.rooms.length; r ++) {
 				var band:TileBand = this.getRoomBand(floor.rooms[r]);
 				
-				band.y = -105 * r;
+				band.y = -205 * r;
 				_roomBands.addChild(band);
 			}
 		}
 		
 		protected function getFloorBand(floor:EventFloor):TileBand {
 			if(! _tilebandCache[floor.name]) {
-				var tex:MovieClip = this.makeFloorTexture(floor);
+				var tex:MovieClip = this.makeFloorTexture(floor, _bandHeight);
 				var mat:MovieMaterial = new MovieMaterial(tex, false, false, true);
 				mat.smooth = true;
 				mat.interactive = true;
-				//mat.oneSide = false;
-				var band:TileBand = new TileBand(mat, _curve);
+				mat.oneSide = false;
+				var band:TileBand = new TileBand(mat, _curve, _bandHeight);
 				band.data = floor;
 				_tilebandCache[floor.name] = band;
 			}
@@ -198,11 +209,12 @@ package com.creatorsproject.ui
 		
 		protected function getRoomBand(room:EventRoom):TileBand {
 			if(! _tilebandCache[room.name]) {
-				var tex:MovieClip = this.makeRoomTexture(room);
+				var tex:MovieClip = this.makeRoomTexture(room, _bandHeight);
 				var mat:MovieMaterial = new MovieMaterial(tex, false, false, true);
 				mat.smooth = true;
 				mat.interactive = true;
-				var band:TileBand = new TileBand(mat, _curve);
+				mat.oneSide = false;
+				var band:TileBand = new TileBand(mat, _curve, _bandHeight);
 				band.data = room;
 				_tilebandCache[room.name] = band;
 			}
@@ -270,7 +282,10 @@ package com.creatorsproject.ui
 					text.htmlText = event.name;
 					text.x = startHr * _widthPerHour + 5;
 					text.y = top + 5;
+					text.width = (endHr - startHr) * _widthPerHour - 10;
 					text.height = height - 5;
+					var format:TextFormat = new TextFormat(null, 36);
+					text.setTextFormat(format);
 					parent.addChild(text); 
 			}
 		}
