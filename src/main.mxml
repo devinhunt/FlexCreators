@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <mx:WindowedApplication xmlns:mx="http://www.adobe.com/2006/mxml" layout="absolute" title="Creators Project" backgroundColor="0xffffff" width="1024" height="768"
-	applicationComplete="go()" xmlns:textures="com.creatorsproject.ui.textures.*">
+	 xmlns:textures="com.creatorsproject.ui.textures.*">
 
 	<mx:Script>
 		<![CDATA[
@@ -28,7 +28,8 @@
 			import org.papervision3d.render.BasicRenderEngine;
 			import org.papervision3d.view.Viewport3D;
 			
-			public static const URL_SERVER:String = "http://localhost:8000/";
+			[Bindable]
+			public static var URL_SERVER:String = "http://localhost:8000/";
 			public static const URL_SCHEDULE:String = "api/schedule";
 			public static const URL_CREATOR:String = "api/creator";
 			public static const URL_ROOM:String = "api/room";
@@ -58,17 +59,25 @@
 			
 			// ____________________________________________ Application Setup
 			
-			public function go():void {
+			public function initSever():void {
 				instance = this;
-				this.initTouch();
-				this.initData(); // starts the interface automatically on valid data
-				this.init3D();
-			}
-			
-			public function initData():void {
+				URL_SERVER = this.serverUrlInput.text;
 				_partyData = new PartyData();
 				_partyData.loadData();
-				_partyData.addEventListener(Event.COMPLETE, this.initInterface);
+				_partyData.addEventListener(Event.COMPLETE, this.onDataSuccess);
+				_partyData.addEventListener(IOErrorEvent.IO_ERROR, this.onPartyDataError);
+				this.serverDialog.visible = false;
+			}
+			
+			public function onPartyDataError(event:IOErrorEvent):void {
+				this.connectPrompt.text = "Sorry, that URL isn't valid. Where is the server?";
+				this.serverDialog.visible = true;
+			}
+			
+			public function onDataSuccess(event:Event):void {
+				this.initTouch();
+				this.init3D();
+				this.initInterface();
 			}
 			
 			public function init3D():void {
@@ -230,6 +239,12 @@
 	<mx:Canvas id="clickMatte" backgroundColor="0xffffff" width="100%" height="100%" />
 	<mx:UIComponent id="backUI" width="100%" height="100%" opaqueBackground="0xffffff"/>
 	<mx:UIComponent id="frontUI" width="100%" height="100%" />
-	
 	<mx:Button label="Toggle your screen" right="10" bottom = "10" click="this.toggleFullscreen()"/>
+	<mx:TitleWindow verticalCenter="0" horizontalCenter="0" title="Connect to Touchserver" id="serverDialog" minWidth="256">
+		<mx:Label id="connectPrompt" text="So, where is our sever located?" />
+		<mx:TextInput id="serverUrlInput" text="{URL_SERVER}" width="100%" />
+		<mx:HBox horizontalAlign="center" width="100%">
+			<mx:Button label="Connect" click="initSever();" />
+		</mx:HBox>
+	</mx:TitleWindow>
 </mx:WindowedApplication>

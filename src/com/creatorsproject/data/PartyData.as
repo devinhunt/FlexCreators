@@ -197,6 +197,7 @@ package com.creatorsproject.data
 		 */		
 		public function onJsonIOError(event:Event):void {
 			trace("There has been an IOError");
+			this.dispatchEvent(new IOErrorEvent(IOErrorEvent.IO_ERROR));
 		}
 		
 		// ------------------------------------------------ Getters and Setters
