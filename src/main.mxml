@@ -60,9 +60,9 @@
 			
 			public function go():void {
 				instance = this;
+				this.initTouch();
 				this.initData(); // starts the interface automatically on valid data
 				this.init3D();
-				this.initTouch();
 			}
 			
 			public function initData():void {
@@ -82,10 +82,10 @@
 			}
 			
 			public function initTouch():void {
-				_touchController = new TouchController(this.stage);
-				_touchController.addEventListener(GestureEvent.SWIPE_START, onSwipe);
-				_touchController.addEventListener(GestureEvent.SWIPE, onSwipe);
-				_touchController.addEventListener(GestureEvent.SWIPE_END, onSwipe);
+				TouchController.me.setup(this.stage, this.clickMatte);
+				TouchController.me.addEventListener(GestureEvent.SWIPE_START, onSwipe);
+				TouchController.me.addEventListener(GestureEvent.SWIPE, onSwipe);
+				TouchController.me.addEventListener(GestureEvent.SWIPE_END, onSwipe);
 			}
 			
 			public function initInterface(event:Event = null):void {
@@ -97,11 +97,12 @@
 				
 				// setup them up in our world o' fun
 				// First, the events
+				_eventUI.rotationY = 90;
 				setUIPosition(_eventUI, 0);
 				_scene.addChild(_eventUI);
 				
 				// Second, creators
-				setUIPosition(_creatorUI, Math.PI / 4);
+				setUIPosition(_creatorUI, Math.PI / 5);
 				_scene.addChild(_creatorUI);
 				
 				// finally, get the camera into place
@@ -111,9 +112,9 @@
 			}
 			
 			private function dump():void {
-				var step = Math.PI / 20;
+				var step:Number = Math.PI / 20;
 				var mat:ColorMaterial = new ColorMaterial();
-				for(var i = 0; i < 40; i ++) {
+				for(var i:int = 0; i < 40; i ++) {
 					var cube:Cube = new Cube(new MaterialsList({all: mat}), 50, 50, 50);
 					cube.z = -2000 * Math.cos(step * i);
 					cube.y = -2000 * Math.sin(step * i);
@@ -146,6 +147,9 @@
 				_camera.z = -5000 * Math.cos(c * Math.PI / 180);
 				_camera.y = 5000 * Math.sin(c * Math.PI / 180);
 				*/
+				
+				//if(_eventUI)
+				//	_eventUI.yaw(2);
 				
 				_renderer.renderScene(_scene, _camera, _viewport);
 			}

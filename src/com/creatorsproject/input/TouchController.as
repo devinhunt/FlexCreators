@@ -2,6 +2,7 @@ package com.creatorsproject.input
 {
 	import com.creatorsproject.input.events.GestureEvent;
 	
+	import flash.display.DisplayObject;
 	import flash.display.Stage;
 	import flash.events.EventDispatcher;
 	import flash.events.MouseEvent;
@@ -38,25 +39,37 @@ package com.creatorsproject.input
 	 */	
 	public class TouchController extends EventDispatcher
 	{
+		// ________________________________________________ Singleton
+		private static var _me:TouchController;
+		public static function get me():TouchController {
+			if(! _me) {
+				_me = new TouchController();
+			}
+			return _me;
+		}
+		
 		public static const SWIPE_THRESHHOLD:Number = 100;
 		
 		private var _stage:Stage;
+		private var _matte:DisplayObject;
 		private var _initialTouch:Point;
 		private var _lastTouch:Point;
 		private var _currentTouch:Point;
 		private var _state:String;
 		
-		public function TouchController(stage:Stage)
+		public function get matte():DisplayObject { return _matte; }
+		
+		public function TouchController()
 		{
-			_stage = stage;
-			_initialTouch = new Point();
-			_state = "noSwipe";
-			this.setup();
 		}
 		
 		// ________________________________________________ Setup
 		
-		protected function setup():void {
+		public function setup(stage:Stage, matte:DisplayObject = null):void {
+			_stage = stage;
+			_matte = matte ? matte : stage;
+			_initialTouch = new Point();
+			_state = "noSwipe";
 			_stage.addEventListener(MouseEvent.MOUSE_DOWN, onMouseDown);
 			_stage.addEventListener(MouseEvent.MOUSE_UP, onMouseUp);
 		}

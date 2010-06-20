@@ -5,6 +5,8 @@ package com.creatorsproject.ui
 	import com.creatorsproject.data.PartyData;
 	import com.creatorsproject.data.ScheduleEvent;
 	import com.creatorsproject.geom.TileBand;
+	import com.creatorsproject.input.TouchController;
+	import com.creatorsproject.input.events.GestureEvent;
 	
 	import flash.display.Graphics;
 	import flash.display.MovieClip;
@@ -62,11 +64,11 @@ package com.creatorsproject.ui
 			_tilebandCache = new Object();
 			_markerCache = new Object();
 			
-			main.instance.clickMatte.addEventListener(MouseEvent.CLICK, onMatteClick);
-			
 			// things we should only need to do once
 			this.buildCurve();
 			this.assembleFloorUI();
+			
+			this.initTouch();
 			
 			this.state = "floors";
 		}
@@ -121,6 +123,15 @@ package com.creatorsproject.ui
 		
 		// ________________________________________________ User Interaction
 		
+		private function initTouch():void {
+			TouchController.me.matte.addEventListener(MouseEvent.CLICK, onMatteClick);
+			TouchController.me.addEventListener(GestureEvent.SWIPE, onSwipe);
+		}
+		
+		private function onSwipe(event:GestureEvent):void {
+			this.rotationY += - event.delta.x / 10;
+		}
+		
 		private function onMatteClick(event:MouseEvent = null):void {
 			switch(_state) {
 				case "rooms":
@@ -142,7 +153,6 @@ package com.creatorsproject.ui
 			
 			if(! _floorBands) {
 				_floorBands = new DisplayObject3D();
-				_floorBands.rotationY = 90;
 			}			
 			
 			for(var f:int = 0; f < _schedule.floors.length; f ++) {
@@ -158,7 +168,6 @@ package com.creatorsproject.ui
 				_roomBands = new DisplayObject3D();
 			}
 			
-			// reset the object map
 			var kids:Object = _roomBands.children;
 			for each(var kid:DisplayObject3D in kids) {
 				_roomBands.removeChild(kid);
@@ -178,6 +187,7 @@ package com.creatorsproject.ui
 				var mat:MovieMaterial = new MovieMaterial(tex, false, false, true);
 				mat.smooth = true;
 				mat.interactive = true;
+				//mat.oneSide = false;
 				var band:TileBand = new TileBand(mat, _curve);
 				band.data = floor;
 				_tilebandCache[floor.name] = band;
@@ -199,8 +209,6 @@ package com.creatorsproject.ui
 			
 			return _tilebandCache[room.name];
 		}
-		
-		
 		
 		/**
 		 * Builds a long texture to be applied to a solid plane 
