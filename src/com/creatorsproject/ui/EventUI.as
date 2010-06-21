@@ -5,7 +5,7 @@ package com.creatorsproject.ui
 	import com.creatorsproject.data.PartyData;
 	import com.creatorsproject.data.ScheduleEvent;
 	import com.creatorsproject.geom.TileBand;
-	import com.creatorsproject.input.events.GestureEvent;
+	import com.creatorsproject.input.TouchController;
 	
 	import flash.display.Graphics;
 	import flash.display.MovieClip;
@@ -52,7 +52,7 @@ package com.creatorsproject.ui
 		private var _state:String;
 		
 		/** The floor we're expanding on */
-		private var _targetFloor:EventFloor;
+		private var _targetFloorBand:TileBand;
 		
 		/**
 		 * Default Constructor 
@@ -60,6 +60,7 @@ package com.creatorsproject.ui
 		 */		
 		public function EventUI(schedule:PartyData)
 		{
+			super();
 			_schedule = schedule;
 			_liveMarkers = [];
 			_tilebandCache = new Object();
@@ -83,9 +84,11 @@ package com.creatorsproject.ui
 			// and update the state
 			switch(_state) {
 				case "floors":
+				case "rooms":
 					if(fling.isSwiping) {
-						this.rotationY += fling.velocity.x / 10;
+						this.rotationY += - fling.velocity.x / 10;
 					}
+					break;
 			}
 		}
 		
@@ -101,12 +104,12 @@ package com.creatorsproject.ui
 			
 			switch(_state) {
 				case "floors":
-					_targetFloor = null;
+					_targetFloorBand = null;
 					this.removeChild(_roomBands);
 					this.addChild(_floorBands);
 					break;
 				case "floorSelect":
-					this.assembleRoomUI(_targetFloor);
+					this.assembleRoomUI(_targetFloorBand.data as EventFloor);
 					this.state = "floorToRoom";
 					break;
 				case "floorToRoom":
@@ -128,16 +131,18 @@ package com.creatorsproject.ui
 			super.onMatteClick(event);
 			switch(_state) {
 				case "rooms":
-					this.state = "roomToFloor";
+					trace(TouchController.me.state);
+					if(TouchController.me.state != "swipe") {
+						this.state = "roomToFloor";
+					}
 					break;
 			}
 		}
 		
 		
-		private function onFloorBandClick(event:InteractiveScene3DEvent = null):void {
-			if(! _targetFloor) {
-				trace("got the floor click");
-				_targetFloor = (event.target as TileBand).data as EventFloor;
+		private function onFloorBandRelease(event:InteractiveScene3DEvent):void {
+			if(TouchController.me.state == "touching") {
+				_targetFloorBand = (event.target as TileBand) as TileBand;
 				this.state = "floorSelect";
 			}
 		}
@@ -152,7 +157,7 @@ package com.creatorsproject.ui
 			for(var f:int = 0; f < _schedule.floors.length; f ++) {
 				var band:TileBand = this.getFloorBand(_schedule.floors[f]);
 				band.y = -205 * f;
-				band.addEventListener(InteractiveScene3DEvent.OBJECT_CLICK, this.onFloorBandClick);
+				band.addEventListener(InteractiveScene3DEvent.OBJECT_RELEASE, this.onFloorBandRelease);
 				_floorBands.addChild(band);
 			}
 		}

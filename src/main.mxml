@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <mx:WindowedApplication xmlns:mx="http://www.adobe.com/2006/mxml" layout="absolute" title="Creators Project" backgroundColor="0xffffff" width="1024" height="768"
-	 xmlns:textures="com.creatorsproject.ui.textures.*">
+	 xmlns:textures="com.creatorsproject.ui.textures.*" applicationComplete="go()">
 
 	<mx:Script>
 		<![CDATA[
@@ -60,6 +60,10 @@
 			private var _creatorUI:CreatorUI;
 			
 			// ____________________________________________ Application Setup
+			
+			public function go():void {
+				initSever();
+			}
 			
 			public function initSever():void {
 				instance = this;
@@ -151,23 +155,12 @@
 			// ____________________________________________ Rendering and Updating
 			
 			public function onRenderTick(event:Event):void {
-				
 				for each(var t:DisplayObject3D in _scene.children) {
 					if(t is ITickable) {
 						(t as ITickable).tick();
 					}
 				}
-				
-				/*
-				var c:Number = _camera.rotationX - .5;
-				_camera.rotationX = c;
-				_camera.z = -5000 * Math.cos(c * Math.PI / 180);
-				_camera.y = 5000 * Math.sin(c * Math.PI / 180);
-				*/
-				
-				//if(_eventUI)
-				//	_eventUI.yaw(2);
-				
+								
 				_renderer.renderScene(_scene, _camera, _viewport);
 			}
 			
@@ -248,7 +241,7 @@
 	<mx:UIComponent id="backUI" width="100%" height="100%" opaqueBackground="0xffffff"/>
 	<mx:UIComponent id="frontUI" width="100%" height="100%" />
 	<mx:Button label="Toggle your screen" right="10" bottom = "10" click="this.toggleFullscreen()"/>
-	<mx:TitleWindow verticalCenter="0" horizontalCenter="0" title="Connect to Touchserver" id="serverDialog" minWidth="256">
+	<mx:TitleWindow verticalCenter="0" horizontalCenter="0" title="Connect to Touchserver" id="serverDialog" minWidth="256" visible="false">
 		<mx:Label id="connectPrompt" text="So, where is our sever located?" />
 		<mx:TextInput id="serverUrlInput" text="{URL_SERVER}" width="100%" />
 		<mx:HBox horizontalAlign="center" width="100%">
