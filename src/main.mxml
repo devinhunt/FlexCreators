@@ -4,6 +4,8 @@
 
 	<mx:Script>
 		<![CDATA[
+			import org.papervision3d.core.log.event.PaperLoggerEvent;
+			import org.papervision3d.core.log.PaperLogger;
 			import org.papervision3d.core.math.Number3D;
 			import com.creatorsproject.input.events.GestureEvent;
 			import com.creatorsproject.input.TouchController;
@@ -85,9 +87,15 @@
 				_renderer = new BasicRenderEngine();
 				_scene = new Scene3D();
 				_camera = new Camera3D(30);
+
+				PaperLogger.getInstance().addEventListener(PaperLoggerEvent.TYPE_LOGEVENT, log);
 				
 				this.backUI.addChild(_viewport);
 				this.addEventListener(Event.ENTER_FRAME, this.onRenderTick); 
+			}
+			
+			public function log(event:PaperLoggerEvent):void {
+				trace("!!!!!!!! " + event.type + " :: " + event.paperLogVO.msg);
 			}
 			
 			public function initTouch():void {

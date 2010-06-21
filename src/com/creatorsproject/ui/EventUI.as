@@ -24,7 +24,7 @@ package com.creatorsproject.ui
 		/** The schedule model we're displaying */
 		private var _schedule:PartyData;
 		
-		private var _widthPerHour:Number = 200;
+		private var _widthPerHour:Number = 300;
 		private var _bandHeight:Number = 200;
 		
 		/** Step to divide the grid by, in hours */
@@ -50,9 +50,6 @@ package com.creatorsproject.ui
 		
 		/** current state of the schedule ui */
 		private var _state:String;
-		
-		/** are we currently swiping? */
-		private var _isSwiping:Boolean = false;
 		
 		/** The floor we're expanding on */
 		private var _targetFloor:EventFloor;
@@ -88,7 +85,15 @@ package com.creatorsproject.ui
 			
 			// and update the state
 			switch(_state) {
-				
+				case "floors":
+				case "floorsSelect":
+				case "floorToRoom":
+				case "rooms":
+				case "roomToFloor":
+					if(this.isSwiping) {
+						this.rotationY += - this.swipeVelocity.x * .08;
+					}
+					break;
 			}
 		}
 		
@@ -126,22 +131,7 @@ package com.creatorsproject.ui
 		}
 		
 		// ________________________________________________ User Interaction
-		
-		override protected function onSwipe(event:GestureEvent):void {
-			super.onSwipe(event);
-			switch(event.type) {
-				case GestureEvent.SWIPE_START:
-					_isSwiping = true;
-					break;
-				case GestureEvent.SWIPE:
-					this.rotationY += - event.delta.x / 10;
-					break;
-				case GestureEvent.SWIPE_END:
-					_isSwiping = false;
-					break;
-			}
-		}
-		
+
 		override protected function onMatteClick(event:MouseEvent):void {
 			super.onMatteClick(event);
 			switch(_state) {
@@ -151,8 +141,9 @@ package com.creatorsproject.ui
 			}
 		}
 		
+		
 		private function onFloorBandClick(event:InteractiveScene3DEvent = null):void {
-			if(! _targetFloor && ! _isSwiping) {
+			if(! _targetFloor && ! isSwiping) {
 				trace("got the floor click");
 				_targetFloor = (event.target as TileBand).data as EventFloor;
 				this.state = "floorSelect";

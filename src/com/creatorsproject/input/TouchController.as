@@ -50,13 +50,15 @@ package com.creatorsproject.input
 		
 		public static const SWIPE_THRESHHOLD:Number = 100;
 		
-		private var _stage:Stage;
-		private var _matte:DisplayObject;
-		private var _initialTouch:Point;
-		private var _lastTouch:Point;
-		private var _currentTouch:Point;
-		private var _state:String;
+		protected var _stage:Stage;
+		protected var _matte:DisplayObject;
+		protected var _initialTouch:Point;
+		protected var _lastTouch:Point;
+		protected var _currentTouch:Point;
+		protected var _state:String;
 		
+		public function get state():String { return _state; } 
+		public function get stage():Stage { return _stage; }
 		public function get matte():DisplayObject { return _matte; }
 		
 		public function TouchController()
@@ -87,17 +89,18 @@ package com.creatorsproject.input
 			_lastTouch = new Point(event.stageX, event.stageY);
 			_currentTouch = _lastTouch.clone();
 			_stage.addEventListener(MouseEvent.MOUSE_MOVE, onMouseMove);
+			_state = "touching";
+			this.dispatchSwipeEvent(GestureEvent.SWIPE_START);
 		}
 		
 		private function onMouseMove(event:MouseEvent):void {
 			_lastTouch = _currentTouch;
 			_currentTouch = new Point(event.stageX, event.stageY);
 			switch(_state) {
-				case "noSwipe":
+				case "touching":
 					var mag:Number = (_initialTouch.x - event.stageX) * (_initialTouch.x - event.stageX) + (_initialTouch.y - event.stageY) * (_initialTouch.y - event.stageY) 
 					if( mag > SWIPE_THRESHHOLD) {
 						_state = "swipe";
-						this.dispatchSwipeEvent(GestureEvent.SWIPE_START);
 					}
 					break;
 				case "swipe":
@@ -108,10 +111,8 @@ package com.creatorsproject.input
 		
 		private function onMouseUp(event:MouseEvent):void {
 			_stage.removeEventListener(MouseEvent.MOUSE_MOVE, onMouseMove);
-			if(_state == "swipe") {
-				_state = "noSwipe";
-				this.dispatchSwipeEvent(GestureEvent.SWIPE_END);
-			}
+			_state = "noSwipe";
+			this.dispatchSwipeEvent(GestureEvent.SWIPE_END);
 		}
 		
 		public function dispatchSwipeEvent(type:String):void {
