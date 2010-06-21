@@ -20,7 +20,6 @@ package com.creatorsproject.input
 		
 		public var velocityMultiplier:Number = 1 / 10;
 		public var dappener:Number = 0.1;
-		public var isSwiping:Boolean = false;
 		public var velocity:Point;
 		
 		private var _deltas:Array;
@@ -31,16 +30,22 @@ package com.creatorsproject.input
 		}
 		
 		protected function setupFling():void {
+			//TouchController.me.stage.addEventListener(Event.ENTER_FRAME, onTick);
 			TouchController.me.addEventListener(GestureEvent.SWIPE_START, onSwipe);
 			TouchController.me.addEventListener(GestureEvent.SWIPE_END, onSwipe);
 			TouchController.me.addEventListener(GestureEvent.SWIPE, onSwipe);
 		}
 		
 		protected function breakdownFling():void {
+			//TouchController.me.stage.removeEventListener(Event.ENTER_FRAME, onTick);
 			TouchController.me.removeEventListener(GestureEvent.SWIPE_START, onSwipe);
 			TouchController.me.removeEventListener(GestureEvent.SWIPE_END, onSwipe);
 			TouchController.me.removeEventListener(GestureEvent.SWIPE, onSwipe);
 		}
+		
+		//_________________________________________________ Getters / Setters 
+		public function get isSwiping():Boolean { return TouchController.me.state == "swipe"; }
+		public function get isFlinging():Boolean { return TouchController.me.state != "noSwipe"; }
 		
 		//_________________________________________________ Events
 		protected function onSwipe(event:GestureEvent = null):void {
@@ -55,6 +60,13 @@ package com.creatorsproject.input
 					break;
 				case GestureEvent.SWIPE_END:
 					break;
+			}
+		}
+		
+		protected function onTick(event:Event = null):void {
+			if(Math.abs(velocity.x) > MIN_VELOCITY || Math.abs(velocity.y) > MIN_VELOCITY) {
+				velocity.x *= (1 - dappener);
+				velocity.y *= (1 - dappener);
 			}
 		}
 		
@@ -76,16 +88,6 @@ package com.creatorsproject.input
 			result.x /= _deltas.length;
 			result.y /= _deltas.length;
 			return result;
-		}
-		
-		protected function onMatteFrame(event:Event):void {
-			if(Math.abs(velocity.x) > MIN_VELOCITY || Math.abs(velocity.y) > MIN_VELOCITY) {
-				velocity.x *= (1 - dappener);
-				velocity.y *= (1 - dappener);
-			} else {
-				isSwiping = false;
-				TouchController.me.matte.removeEventListener(Event.ENTER_FRAME, onMatteFrame);
-			}
 		}
 	}
 }

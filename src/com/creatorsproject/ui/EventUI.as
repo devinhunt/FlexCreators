@@ -68,9 +68,6 @@ package com.creatorsproject.ui
 			// things we should only need to do once
 			this.buildCurve();
 			this.assembleFloorUI();
-			
-			this.initTouch();
-			
 			this.state = "floors";
 		}
 		
@@ -86,14 +83,9 @@ package com.creatorsproject.ui
 			// and update the state
 			switch(_state) {
 				case "floors":
-				case "floorsSelect":
-				case "floorToRoom":
-				case "rooms":
-				case "roomToFloor":
-					if(this.isSwiping) {
-						this.rotationY += - this.swipeVelocity.x * .08;
+					if(fling.isSwiping) {
+						this.rotationY += fling.velocity.x / 10;
 					}
-					break;
 			}
 		}
 		
@@ -143,7 +135,7 @@ package com.creatorsproject.ui
 		
 		
 		private function onFloorBandClick(event:InteractiveScene3DEvent = null):void {
-			if(! _targetFloor && ! isSwiping) {
+			if(! _targetFloor) {
 				trace("got the floor click");
 				_targetFloor = (event.target as TileBand).data as EventFloor;
 				this.state = "floorSelect";
