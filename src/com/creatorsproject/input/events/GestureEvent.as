@@ -25,6 +25,20 @@ package com.creatorsproject.input.events
 		public static const SWIPE:String = "swipe";
 		
 		/**
+		 * A safe click on the background matte
+		 * A safe clikc is when no swipe has occured before the user realeases his finger
+		 * @eventType matteClick
+		 */
+		public static const MATTE_CLICK:String = "matteClick";
+		
+		/**
+		 * A safe click on the global stage matte
+		 * A safe click is when no swipe has occured before the user realeases his finger
+		 * @eventType matteClick
+		 */
+		public static const STAGE_CLICK:String = "stageClick";
+		
+		/**
 		 * One option the majorAxis property can be 
 		 */
 		public static const X_AXIS:String = "xAxis";

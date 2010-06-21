@@ -2,7 +2,7 @@ package com.creatorsproject.input
 {
 	import com.creatorsproject.input.events.GestureEvent;
 	
-	import flash.display.DisplayObject;
+	import flash.display.InteractiveObject;
 	import flash.display.Stage;
 	import flash.events.EventDispatcher;
 	import flash.events.MouseEvent;
@@ -31,6 +31,13 @@ package com.creatorsproject.input
 	 */
 	[Event(name="swipeEnd", type="com.creatorsproject.input.events.GestureEvent")]
 	
+	/**
+	 * Dispatched when a safe click occurs on the background matte
+	 *
+	 * @eventType com.creatorsproject.input.events.GestureEvent.MATTE_CLICK
+	 */
+	[Event(name="matteClick", type="com.creatorsproject.input.events.GestureEvent")]
+	
 	
 	/**
 	 * Translates mouse actions into navigation touch gestures and clicks.
@@ -51,15 +58,16 @@ package com.creatorsproject.input
 		public static const SWIPE_THRESHHOLD:Number = 100;
 		
 		protected var _stage:Stage;
-		protected var _matte:DisplayObject;
+		protected var _matte:InteractiveObject;
 		protected var _initialTouch:Point;
 		protected var _lastTouch:Point;
 		protected var _currentTouch:Point;
 		protected var _state:String;
+		private var _mattePressed:Boolean = false;
 		
 		public function get state():String { return _state; } 
 		public function get stage():Stage { return _stage; }
-		public function get matte():DisplayObject { return _matte; }
+		public function get matte():InteractiveObject { return _matte; }
 		
 		public function TouchController()
 		{
@@ -67,13 +75,17 @@ package com.creatorsproject.input
 		
 		// ________________________________________________ Setup
 		
-		public function setup(stage:Stage, matte:DisplayObject = null):void {
+		public function setup(stage:Stage, matte:InteractiveObject = null):void {
 			_stage = stage;
 			_matte = matte ? matte : stage;
 			_initialTouch = new Point();
 			_state = "noSwipe";
 			_stage.addEventListener(MouseEvent.MOUSE_DOWN, onMouseDown);
 			_stage.addEventListener(MouseEvent.MOUSE_UP, onMouseUp);
+			
+			if(_stage != _matte) {
+				_matte.addEventListener(MouseEvent.MOUSE_DOWN, onMatteDown);
+			}
 		}
 		
 		protected function breakdown():void {
@@ -82,6 +94,10 @@ package com.creatorsproject.input
 		}
 		
 		// ________________________________________________ Interaction Events
+		
+		private function onMatteDown(event:MouseEvent):void {
+			_mattePressed = true;
+		}
 		
 		private function onMouseDown(event:MouseEvent):void {
 			_initialTouch.x = event.stageX;
@@ -110,8 +126,14 @@ package com.creatorsproject.input
 		}
 		
 		private function onMouseUp(event:MouseEvent):void {
+			if(_mattePressed && _state == "touching") {
+				this.dispatchSwipeEvent(GestureEvent.MATTE_CLICK);
+			}
+			
 			_stage.removeEventListener(MouseEvent.MOUSE_MOVE, onMouseMove);
 			_state = "noSwipe";
+			_mattePressed = false;
+			
 			this.dispatchSwipeEvent(GestureEvent.SWIPE_END);
 		}
 		

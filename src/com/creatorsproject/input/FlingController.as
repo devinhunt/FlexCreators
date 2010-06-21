@@ -22,6 +22,8 @@ package com.creatorsproject.input
 		public var dappener:Number = 0.1;
 		public var velocity:Point;
 		
+		public var state:String = "still";
+		
 		private var _deltas:Array;
 		
 		public function FlingController()
@@ -30,35 +32,37 @@ package com.creatorsproject.input
 		}
 		
 		protected function setupFling():void {
-			//TouchController.me.stage.addEventListener(Event.ENTER_FRAME, onTick);
 			TouchController.me.addEventListener(GestureEvent.SWIPE_START, onSwipe);
 			TouchController.me.addEventListener(GestureEvent.SWIPE_END, onSwipe);
 			TouchController.me.addEventListener(GestureEvent.SWIPE, onSwipe);
 		}
 		
 		protected function breakdownFling():void {
-			//TouchController.me.stage.removeEventListener(Event.ENTER_FRAME, onTick);
 			TouchController.me.removeEventListener(GestureEvent.SWIPE_START, onSwipe);
 			TouchController.me.removeEventListener(GestureEvent.SWIPE_END, onSwipe);
 			TouchController.me.removeEventListener(GestureEvent.SWIPE, onSwipe);
 		}
 		
 		//_________________________________________________ Getters / Setters 
-		public function get isSwiping():Boolean { return TouchController.me.state == "swipe"; }
-		public function get isFlinging():Boolean { return TouchController.me.state != "noSwipe"; }
+		public function get isSwiping():Boolean { return state == "swipe"; }
+		public function get isFlinging():Boolean { return state == "fling" || state == "swipe"; }
 		
 		//_________________________________________________ Events
 		protected function onSwipe(event:GestureEvent = null):void {
 			
 			switch(event.type) {
 				case GestureEvent.SWIPE_START:
+					TouchController.me.stage.removeEventListener(Event.ENTER_FRAME, onTick);
 					_deltas = [];
 					velocity = smooth(event.delta);
+					state = "swipe";
 					break;
 				case GestureEvent.SWIPE:
 					velocity = smooth(event.delta);
 					break;
 				case GestureEvent.SWIPE_END:
+					state = "fling";
+					TouchController.me.stage.addEventListener(Event.ENTER_FRAME, onTick);
 					break;
 			}
 		}
@@ -67,6 +71,9 @@ package com.creatorsproject.input
 			if(Math.abs(velocity.x) > MIN_VELOCITY || Math.abs(velocity.y) > MIN_VELOCITY) {
 				velocity.x *= (1 - dappener);
 				velocity.y *= (1 - dappener);
+			} else {
+				state = "still";
+				TouchController.me.stage.removeEventListener(Event.ENTER_FRAME, onTick);
 			}
 		}
 		

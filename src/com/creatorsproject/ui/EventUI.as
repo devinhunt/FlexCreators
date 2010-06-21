@@ -6,10 +6,10 @@ package com.creatorsproject.ui
 	import com.creatorsproject.data.ScheduleEvent;
 	import com.creatorsproject.geom.TileBand;
 	import com.creatorsproject.input.TouchController;
+	import com.creatorsproject.input.events.GestureEvent;
 	
 	import flash.display.Graphics;
 	import flash.display.MovieClip;
-	import flash.events.MouseEvent;
 	import flash.text.TextField;
 	import flash.text.TextFormat;
 	
@@ -85,7 +85,7 @@ package com.creatorsproject.ui
 			switch(_state) {
 				case "floors":
 				case "rooms":
-					if(fling.isSwiping) {
+					if(fling.isFlinging) {
 						this.rotationY += - fling.velocity.x / 10;
 					}
 					break;
@@ -127,18 +127,14 @@ package com.creatorsproject.ui
 		
 		// ________________________________________________ User Interaction
 
-		override protected function onMatteClick(event:MouseEvent):void {
+		override protected function onMatteClick(event:GestureEvent):void {
 			super.onMatteClick(event);
 			switch(_state) {
 				case "rooms":
-					trace(TouchController.me.state);
-					if(TouchController.me.state != "swipe") {
-						this.state = "roomToFloor";
-					}
+					this.state = "roomToFloor";
 					break;
 			}
 		}
-		
 		
 		private function onFloorBandRelease(event:InteractiveScene3DEvent):void {
 			if(TouchController.me.state == "touching") {
@@ -186,7 +182,6 @@ package com.creatorsproject.ui
 				var mat:MovieMaterial = new MovieMaterial(tex, false, false, true);
 				mat.smooth = true;
 				mat.interactive = true;
-				mat.oneSide = false;
 				var band:TileBand = new TileBand(mat, _curve, _bandHeight);
 				band.data = floor;
 				_tilebandCache[floor.name] = band;
@@ -201,7 +196,6 @@ package com.creatorsproject.ui
 				var mat:MovieMaterial = new MovieMaterial(tex, false, false, true);
 				mat.smooth = true;
 				mat.interactive = true;
-				mat.oneSide = false;
 				var band:TileBand = new TileBand(mat, _curve, _bandHeight);
 				band.data = room;
 				_tilebandCache[room.name] = band;
