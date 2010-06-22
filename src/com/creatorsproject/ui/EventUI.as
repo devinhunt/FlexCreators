@@ -8,6 +8,8 @@ package com.creatorsproject.ui
 	import com.creatorsproject.input.TouchController;
 	import com.creatorsproject.input.events.GestureEvent;
 	import com.creatorsproject.ui.chips.EventDetailChip;
+	import com.creatorsproject.ui.transitions.AnimationController;
+	import com.creatorsproject.ui.transitions.AnimationProfile;
 	
 	import flash.display.Graphics;
 	import flash.display.MovieClip;
@@ -16,6 +18,8 @@ package com.creatorsproject.ui
 	import flash.text.TextFormat;
 	
 	import org.papervision3d.core.geom.renderables.Vertex3D;
+	import org.papervision3d.core.math.Number3D;
+	import org.papervision3d.events.AnimationEvent;
 	import org.papervision3d.events.InteractiveScene3DEvent;
 	import org.papervision3d.materials.MovieMaterial;
 	import org.papervision3d.objects.DisplayObject3D;
@@ -124,12 +128,13 @@ package com.creatorsproject.ui
 					this.state = "floorToRoom";
 					break;
 				case "floorToRoom":
-					this.state = "rooms";
+					this.addChild(_roomBands);
+					this.floorToRoomAnimation();
+					//this.state = "rooms";
 					break;
 				case "rooms":
 					// TEMP TODO :: Need to be smarted about adding / removing these bands
 					this.removeChild(_floorBands);
-					this.addChild(_roomBands);
 					break;
 				case "roomToFloor":
 					this.state = "floors"
@@ -317,6 +322,35 @@ package com.creatorsproject.ui
 					text.setTextFormat(format);
 					parent.addChild(text); 
 			}
+		}
+		
+		// ________________________________________________ UI Transitions
+		private function onTransitionComplete(event:AnimationEvent):void {
+			var ac:AnimationController = event.target as AnimationController;
+			ac.removeEventListener(AnimationEvent.COMPLETE, onTransitionComplete);
+			ac.breakdown();
+			
+			switch(_state) {
+				case "floorToRoom":
+					state = "rooms";
+					break;
+			}
+		}
+		
+		private function floorToRoomAnimation():void {
+			var ac:AnimationController = new AnimationController();
+			for each(var band:TileBand in _floorBands.children) {
+				ac.addAnimationProfile(new AnimationProfile(band));
+			}
+			
+			for each(band in _roomBands.children) {
+				var ap:AnimationProfile = new AnimationProfile(band);
+				ap.startPosition = new Number3D();
+				ap.endPosition = band.position.clone();
+				ac.addAnimationProfile(ap);
+			}
+			ac.addEventListener(AnimationEvent.COMPLETE, onTransitionComplete);
+			ac.start();
 		}
 		
 		// ________________________________________________ Curve Genereation

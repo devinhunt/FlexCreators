@@ -13,6 +13,8 @@
 
 	<mx:Script>
 		<![CDATA[
+			import org.papervision3d.core.animation.channel.Channel3D;
+			import org.papervision3d.core.controller.AnimationController;
 			import org.papervision3d.core.log.event.PaperLoggerEvent;
 			import org.papervision3d.core.log.PaperLogger;
 			import org.papervision3d.core.math.Number3D;
@@ -72,6 +74,14 @@
 			
 			public function go():void {
 				initSever();
+				//animationTest();
+			}
+			
+			private function animationTest():void {
+				this.init3D();
+				
+				var cube:Cube = new Cube(new MaterialsList({all: new ColorMaterial()}), 100, 100, 100);
+				_scene.addChild(cube);
 			}
 			
 			public function initSever():void {
@@ -132,7 +142,7 @@
 				// finally, get the camera into place
 				_camera.z = -5000;
 				
-				dump();
+				//dump();
 			}
 			
 			private function dump():void {
