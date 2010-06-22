@@ -58,7 +58,7 @@ package com.creatorsproject.input
 					state = "swipe";
 					break;
 				case GestureEvent.SWIPE:
-					velocity = smooth(event.delta);
+					velocity = smooth(event.delta.clone());
 					break;
 				case GestureEvent.SWIPE_END:
 					state = "fling";
@@ -87,13 +87,17 @@ package com.creatorsproject.input
 				_deltas.shift();
 			}
 			_deltas.push(p);
+			
 			var result:Point = new Point();
+			
 			for each(var pt:Point in _deltas) {
 				result.x += pt.x;
 				result.y += pt.y;
 			}
+			
 			result.x /= _deltas.length;
 			result.y /= _deltas.length;
+			
 			return result;
 		}
 	}

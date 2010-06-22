@@ -7,6 +7,7 @@ package com.creatorsproject.ui
 	import com.creatorsproject.geom.TileBand;
 	import com.creatorsproject.input.TouchController;
 	import com.creatorsproject.input.events.GestureEvent;
+	import com.creatorsproject.ui.chips.EventDetailChip;
 	
 	import flash.display.Graphics;
 	import flash.display.MovieClip;
@@ -54,6 +55,12 @@ package com.creatorsproject.ui
 		/** The floor we're expanding on */
 		private var _targetFloorBand:TileBand;
 		
+		/** The data that the click on the room band represents */
+		private var _targetEventData:ScheduleEvent;
+		
+		/** The display object for the event details. This will go on the Front UI plane */
+		private var _detailChip:EventDetailChip;
+		
 		/**
 		 * Default Constructor 
 		 * 
@@ -63,8 +70,10 @@ package com.creatorsproject.ui
 			super();
 			_schedule = schedule;
 			_liveMarkers = [];
+			_detailChip = new EventDetailChip();
 			_tilebandCache = new Object();
 			_markerCache = new Object();
+			
 			
 			// things we should only need to do once
 			this.buildCurve();
@@ -122,6 +131,10 @@ package com.creatorsproject.ui
 				case "roomToFloor":
 					this.state = "floors"
 					break;
+				case "eventDetail":
+					_detailChip.eventData  = _targetEventData;
+					main.instance.frontUI.addChild(_detailChip);
+					break;
 			}
 		}
 		
@@ -131,15 +144,40 @@ package com.creatorsproject.ui
 			super.onMatteClick(event);
 			switch(_state) {
 				case "rooms":
+					// exit out of the rooms view
 					this.state = "roomToFloor";
 					break;
 			}
 		}
 		
 		private function onFloorBandRelease(event:InteractiveScene3DEvent):void {
-			if(TouchController.me.state == "touching") {
-				_targetFloorBand = (event.target as TileBand) as TileBand;
+			if(TouchController.me.state == "touching" && _state == "floors") {
+				_targetFloorBand = event.target as TileBand;
 				this.state = "floorSelect";
+			}
+		}
+		
+		/**
+		 * Our Room band has been licked properly. Start showing an event chip 
+		 * @param event
+		 * 
+		 */		
+		private function onRoomBandClick(event:InteractiveScene3DEvent):void {
+			if(_state == "rooms") {
+				_targetEventData;
+				var band:TileBand = event.target as TileBand;
+				var data:EventRoom = band.data as EventRoom;
+				
+				for each(var e:ScheduleEvent in data.events) {
+					var startHr:Number = (e.startTime.getTime() - _schedule.startDate.getTime()) / 1000 / 60 / 60;
+					var endHr:Number = (e.endTime.getTime() - _schedule.startDate.getTime()) / 1000 / 60 / 60;
+					
+					if(startHr * _widthPerHour <= event.x && endHr * _widthPerHour >= event.x) {
+						_targetEventData = e;
+						this.state = "eventDetail";
+						break;
+					}
+				}
 			}
 		}
 		
@@ -170,7 +208,6 @@ package com.creatorsproject.ui
 			
 			for(var r:int = 0; r < floor.rooms.length; r ++) {
 				var band:TileBand = this.getRoomBand(floor.rooms[r]);
-				
 				band.y = -205 * r;
 				_roomBands.addChild(band);
 			}
@@ -198,6 +235,7 @@ package com.creatorsproject.ui
 				mat.interactive = true;
 				var band:TileBand = new TileBand(mat, _curve, _bandHeight);
 				band.data = room;
+				band.addEventListener(InteractiveScene3DEvent.OBJECT_CLICK, this.onRoomBandClick);
 				_tilebandCache[room.name] = band;
 			}
 			
@@ -266,7 +304,7 @@ package com.creatorsproject.ui
 					text.y = top + 5;
 					text.width = (endHr - startHr) * _widthPerHour - 10;
 					text.height = height - 5;
-					var format:TextFormat = new TextFormat(null, 36);
+					var format:TextFormat = new TextFormat("NeoSansIntel", 36);
 					text.setTextFormat(format);
 					parent.addChild(text); 
 			}

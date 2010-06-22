@@ -97,7 +97,7 @@ package com.creatorsproject.data
 			for each(var room:EventRoom in _rooms) {
 				for each(var e:ScheduleEvent in _events) {
 					if(e.roomId == room.id) {
-						room.events.push(e);
+						room.addEvent(e);
 					}
 				}
 			}

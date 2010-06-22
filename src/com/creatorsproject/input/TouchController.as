@@ -4,6 +4,7 @@ package com.creatorsproject.input
 	
 	import flash.display.InteractiveObject;
 	import flash.display.Stage;
+	import flash.events.Event;
 	import flash.events.EventDispatcher;
 	import flash.events.MouseEvent;
 	import flash.geom.Point;
@@ -104,17 +105,19 @@ package com.creatorsproject.input
 			_initialTouch.y = event.stageY;
 			_lastTouch = new Point(event.stageX, event.stageY);
 			_currentTouch = _lastTouch.clone();
-			_stage.addEventListener(MouseEvent.MOUSE_MOVE, onMouseMove);
+			//_stage.addEventListener(MouseEvent.MOUSE_MOVE, onMouseMove);
+			_stage.addEventListener(Event.ENTER_FRAME, onMouseMove);
 			_state = "touching";
 			this.dispatchSwipeEvent(GestureEvent.SWIPE_START);
 		}
 		
-		private function onMouseMove(event:MouseEvent):void {
+		//private function onMouseMove(event:MouseEvent):void {
+		private function onMouseMove(event:Event):void {
 			_lastTouch = _currentTouch;
-			_currentTouch = new Point(event.stageX, event.stageY);
+			_currentTouch = new Point(_stage.mouseX, _stage.mouseY);
 			switch(_state) {
 				case "touching":
-					var mag:Number = (_initialTouch.x - event.stageX) * (_initialTouch.x - event.stageX) + (_initialTouch.y - event.stageY) * (_initialTouch.y - event.stageY) 
+					var mag:Number = (_initialTouch.x - _stage.mouseX) * (_initialTouch.x - _stage.mouseX) + (_initialTouch.y - _stage.mouseY) * (_initialTouch.y - _stage.mouseY) 
 					if( mag > SWIPE_THRESHHOLD) {
 						_state = "swipe";
 					}
@@ -130,7 +133,8 @@ package com.creatorsproject.input
 				this.dispatchSwipeEvent(GestureEvent.MATTE_CLICK);
 			}
 			
-			_stage.removeEventListener(MouseEvent.MOUSE_MOVE, onMouseMove);
+			//_stage.removeEventListener(MouseEvent.MOUSE_MOVE, onMouseMove);
+			_stage.removeEventListener(Event.ENTER_FRAME, onMouseMove);
 			_state = "noSwipe";
 			_mattePressed = false;
 			

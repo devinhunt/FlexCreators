@@ -20,6 +20,9 @@ package com.creatorsproject.data
 		/** ID of the room this event is taking place in */
 		public var roomId:String;
 		
+		/** The name of the room this is taking place in. This is usually set when the event is added to a room object */
+		public var roomName:String = "Default room";
+		
 		/** ID of the creator for this event */
 		public var creatorId:String;
 		
@@ -38,6 +41,10 @@ package com.creatorsproject.data
 		/** The duration of the event in hours */
 		public function get duration():Number { 
 			return (endTime.getTime() - startTime.getTime()) / 1000 / 60 / 60;
+		}
+		
+		public function get dateString():String {
+			return startTime.getUTCHours() + ":" + startTime.getUTCMinutes() + " to " + endTime.getUTCHours() + ":" + endTime.getUTCMinutes(); 
 		}
 		
 		/**

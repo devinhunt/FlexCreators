@@ -21,5 +21,10 @@ package com.creatorsproject.data
 			
 			events = [];
 		}
+		
+		public function addEvent(event:ScheduleEvent):void {
+			event.roomName = this.name;
+			events.push(event);
+		}
 	}
 }
