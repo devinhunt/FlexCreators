@@ -1,7 +1,5 @@
 package com.creatorsproject.ui.transitions
 {
-	import mx.effects.easing.Linear;
-	
 	import org.papervision3d.core.math.Number3D;
 	import org.papervision3d.objects.DisplayObject3D;
 	
@@ -14,19 +12,25 @@ package com.creatorsproject.ui.transitions
 	{
 		public var startPosition:Number3D;
 		public var endPosition:Number3D;
+		
 		public var startAlpha:Number;
 		public var endAlpha:Number;
 		
+		public var startScale:Number;
+		public var endScale:Number;
+		
 		public var target:DisplayObject3D;
 		
-		public function AnimationProfile(target:DisplayObject3D, endPosition:Number3D = null, endOpacity:Number = 1)
+		public function AnimationProfile(target:DisplayObject3D, endPosition:Number3D = null)
 		{
 			this.target = target;
 			this.startPosition = target.position.clone();
 			this.startAlpha = target.alpha;
+			this.startScale = target.scale;
 			
-			this.endPosition = endPosition ? endPosition : new Number3D();
-			this.endAlpha = endOpacity;
+			this.endPosition = endPosition ? endPosition : target.position.clone();
+			this.endAlpha = target.alpha;
+			this.endScale = target.scale;
 		}
 
 	}

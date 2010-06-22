@@ -17,6 +17,8 @@ package com.creatorsproject.ui
 	import flash.text.TextField;
 	import flash.text.TextFormat;
 	
+	import mx.effects.easing.Elastic;
+	
 	import org.papervision3d.core.geom.renderables.Vertex3D;
 	import org.papervision3d.core.math.Number3D;
 	import org.papervision3d.events.AnimationEvent;
@@ -133,11 +135,13 @@ package com.creatorsproject.ui
 					//this.state = "rooms";
 					break;
 				case "rooms":
-					// TEMP TODO :: Need to be smarted about adding / removing these bands
+					// TEMP TODO :: Need to be smarter about adding / removing these bands
 					this.removeChild(_floorBands);
 					break;
 				case "roomToFloor":
-					this.state = "floors"
+					this.addChild(_floorBands);
+					this.roomToFloorAnimation();
+					//this.state = "floors"
 					break;
 				case "eventDetail":
 					_detailChip.eventData  = _targetEventData;
@@ -204,7 +208,7 @@ package com.creatorsproject.ui
 			
 			for(var f:int = 0; f < _schedule.floors.length; f ++) {
 				var band:TileBand = this.getFloorBand(_schedule.floors[f]);
-				band.y = -205 * f;
+				band.y = (205 * _schedule.floors.length / 2) - 205 * f;
 				band.addEventListener(InteractiveScene3DEvent.OBJECT_RELEASE, this.onFloorBandRelease);
 				_floorBands.addChild(band);
 			}
@@ -222,7 +226,7 @@ package com.creatorsproject.ui
 			
 			for(var r:int = 0; r < floor.rooms.length; r ++) {
 				var band:TileBand = this.getRoomBand(floor.rooms[r]);
-				band.y = -205 * r;
+				band.y = (205 * floor.rooms.length / 2) - 205 * r;
 				_roomBands.addChild(band);
 			}
 		}
@@ -334,19 +338,46 @@ package com.creatorsproject.ui
 				case "floorToRoom":
 					state = "rooms";
 					break;
+				case "roomToFloor":
+					state = "floors";
+					break;
 			}
 		}
 		
 		private function floorToRoomAnimation():void {
-			var ac:AnimationController = new AnimationController();
+			var ac:AnimationController = new AnimationController(200);
+			ac.func = Elastic.easeOut;
+			
 			for each(var band:TileBand in _floorBands.children) {
-				ac.addAnimationProfile(new AnimationProfile(band));
+				var ap:AnimationProfile = new AnimationProfile(band);
+				ap.startScale = 1;
+				ap.endScale = .5;
+				ac.addAnimationProfile(ap);
 			}
 			
 			for each(band in _roomBands.children) {
+				ap = new AnimationProfile(band);
+				ap.startScale = 2;
+				ap.endScale = 1;
+				ac.addAnimationProfile(ap);
+			}
+			ac.addEventListener(AnimationEvent.COMPLETE, onTransitionComplete);
+			ac.start();
+		}
+		
+		private function roomToFloorAnimation():void {
+			var ac:AnimationController = new AnimationController(200);
+			ac.func = Elastic.easeOut;
+			
+			for each(var band:TileBand in _floorBands.children) {
 				var ap:AnimationProfile = new AnimationProfile(band);
-				ap.startPosition = new Number3D();
-				ap.endPosition = band.position.clone();
+				ap.endScale = 1;
+				ac.addAnimationProfile(ap);
+			}
+			
+			for each(band in _roomBands.children) {
+				ap = new AnimationProfile(band);
+				ap.endScale = 2;
 				ac.addAnimationProfile(ap);
 			}
 			ac.addEventListener(AnimationEvent.COMPLETE, onTransitionComplete);

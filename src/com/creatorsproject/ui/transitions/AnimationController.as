@@ -73,6 +73,8 @@ package com.creatorsproject.ui.transitions
 				profile.target.x = profile.startPosition.x + (profile.endPosition.x - profile.startPosition.x) * delta;
 				profile.target.y = profile.startPosition.y + (profile.endPosition.y - profile.startPosition.y) * delta;
 				profile.target.z = profile.startPosition.z + (profile.endPosition.z - profile.startPosition.z) * delta;
+				profile.target.alpha = profile.startAlpha + (profile.endAlpha - profile.startAlpha) * delta;
+				profile.target.scale = profile.startScale + (profile.endScale - profile.startScale) * delta;
 			}
 			
 			if(elapsed == _duration) {
