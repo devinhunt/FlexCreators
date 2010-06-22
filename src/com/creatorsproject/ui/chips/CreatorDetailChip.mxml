@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:VBox xmlns:mx="http://www.adobe.com/2006/mxml" width="800" height="600">
+	
+	<mx:Script>
+		<![CDATA[
+			import com.creatorsproject.data.Creator;
+			
+			[Bindable]
+			public var creatorData:Creator;
+		]]>
+	</mx:Script>
+	
+	<mx:HBox width="100%">
+		<mx:VBox width="33%">
+			<mx:Label id="artistName" text="Takeshi Murata" />
+			<mx:Label id="artistTheme" text="Artist, Musician" />
+			<mx:Button label="Related Event" />
+		</mx:VBox>
+		
+		<mx:Text width="66%" text="Here is some related text" />
+	</mx:HBox>
+	
+	
+</mx:VBox>

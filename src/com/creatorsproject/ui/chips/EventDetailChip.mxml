@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:VBox xmlns:mx="http://www.adobe.com/2006/mxml" width="800" height="300" horizontalCenter="0" verticalCenter="0" backgroundColor="0xaaaaaa" horizontalAlign="center">
+	
+	<mx:Script>
+		<![CDATA[
+			import com.creatorsproject.data.ScheduleEvent;
+			
+			[Bindable]
+			public var eventData:ScheduleEvent;
+		]]>
+	</mx:Script>
+	
+	
+	<mx:HBox width="100%" height="100%">
+		
+		<mx:VBox width="33%">
+			<mx:Label id="eventName" text="{eventData.name}" />
+			<mx:Button label="About these guys"/>
+		</mx:VBox>
+		
+		<mx:VBox width="33%">
+			<mx:Label id="eventTime" text="{eventData.dateString}" />
+			<mx:Label id="eventLocation" text="{eventData.roomName}" />
+			<mx:Button label="Where is this happening?" />
+		</mx:VBox>
+		
+		<mx:VBox width="33%">
+			<mx:Text id="eventSummary" text="{eventData.name}" />
+		</mx:VBox>
+		
+	</mx:HBox>
+	
+	<mx:Button label="Close" click="this.dispatchEvent(new Event(Event.CLOSE))" />
+</mx:VBox>

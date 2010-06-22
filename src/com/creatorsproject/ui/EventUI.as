@@ -11,6 +11,7 @@ package com.creatorsproject.ui
 	
 	import flash.display.Graphics;
 	import flash.display.MovieClip;
+	import flash.events.Event;
 	import flash.text.TextField;
 	import flash.text.TextFormat;
 	
@@ -71,6 +72,7 @@ package com.creatorsproject.ui
 			_schedule = schedule;
 			_liveMarkers = [];
 			_detailChip = new EventDetailChip();
+			_detailChip.addEventListener(Event.CLOSE, onChipCloseRequest);
 			_tilebandCache = new Object();
 			_markerCache = new Object();
 			
@@ -125,6 +127,7 @@ package com.creatorsproject.ui
 					this.state = "rooms";
 					break;
 				case "rooms":
+					// TEMP TODO :: Need to be smarted about adding / removing these bands
 					this.removeChild(_floorBands);
 					this.addChild(_roomBands);
 					break;
@@ -162,9 +165,8 @@ package com.creatorsproject.ui
 		 * @param event
 		 * 
 		 */		
-		private function onRoomBandClick(event:InteractiveScene3DEvent):void {
-			if(_state == "rooms") {
-				_targetEventData;
+		private function onRoomBandRelease(event:InteractiveScene3DEvent):void {
+			if(TouchController.me.state == "touching" && _state == "rooms") {
 				var band:TileBand = event.target as TileBand;
 				var data:EventRoom = band.data as EventRoom;
 				
@@ -178,6 +180,13 @@ package com.creatorsproject.ui
 						break;
 					}
 				}
+			}
+		}
+		
+		private function onChipCloseRequest(event:Event):void {
+			if(_state == "eventDetail") {
+				main.instance.frontUI.removeChild(_detailChip);
+				this.state = "rooms";
 			}
 		}
 		
@@ -235,7 +244,7 @@ package com.creatorsproject.ui
 				mat.interactive = true;
 				var band:TileBand = new TileBand(mat, _curve, _bandHeight);
 				band.data = room;
-				band.addEventListener(InteractiveScene3DEvent.OBJECT_CLICK, this.onRoomBandClick);
+				band.addEventListener(InteractiveScene3DEvent.OBJECT_RELEASE, this.onRoomBandRelease);
 				_tilebandCache[room.name] = band;
 			}
 			
