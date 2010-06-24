@@ -13,7 +13,7 @@ package com.creatorsproject.ui
 	 * @author devin
 	 */	
 	
-	public class CreatorUI extends DisplayObject3D implements ITickable
+	public class CreatorUI extends TouchUI implements ITickable
 	{	
 		public static var chipWidth:Number = 300;
 		public static var chipHeight:Number = 300;
@@ -26,6 +26,7 @@ package com.creatorsproject.ui
 		public function CreatorUI(creators:Array)
 		{
 			super();
+			this.name = "Creator Module";
 			_creators = creators;
 			this.assembleCreatorsUI();
 			this.state = "creators";

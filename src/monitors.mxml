@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:WindowedApplication xmlns:mx="http://www.adobe.com/2006/mxml" layout="absolute" width="1370" height="768" enterFrame="tick()"
+	horizontalScrollPolicy="off" verticalScrollPolicy="off">
+
+	<mx:Style>
+		@font-face {
+			src: url("media/fonts/NeoSansIntel.ttf");
+			font-family: NeoSansIntel;
+			font-style: normal;
+			font-weight: normal;
+		}
+		
+		.statusSmall {
+			font-family: NeoSansIntel;
+			font-size: 10;
+			color: #0079bc;
+		}
+		
+		.statusBig {
+			font-family: NeoSansIntel;
+			font-size: 18;
+			color: #000000;
+			
+			padding-top: 0;
+			padding-bottom: 0;
+		}
+	</mx:Style>
+
+	<mx:Script>
+		<![CDATA[
+			import com.creatorsproject.data.DataLocations;
+			import com.creatorsproject.data.PartyStatus;
+			import mx.events.CollectionEventKind;
+			import com.creatorsproject.ui.tv.StatusCard;
+			import mx.events.CollectionEvent;
+			import com.creatorsproject.data.PartyData;
+		
+			[Bindable]
+			public var _partyData:PartyData;
+			
+			/**
+			 * Entry Point
+			 */
+			public function init(isLocal = true):void {
+				DataLocations.isLocal = isLocal
+				initWindow.visible = false;
+				
+				_partyData = new PartyData();
+				_partyData.statuses.addEventListener(CollectionEvent.COLLECTION_CHANGE, onStatusChange);
+				
+				//_partyData.loadData();
+				_partyData.updateStatuses();
+				_partyData.updateLivePhoto();
+			}
+			
+			private function onStatusChange(event:CollectionEvent):void {
+				switch(event.kind) {
+					case CollectionEventKind.ADD:
+						var newMajor:PartyStatus = _partyData.getLatestMajor();
+						if(newMajor) {
+							this.majorStatus.text = newMajor.status;
+						}
+						break;
+				}
+			}
+			
+			private function tick():void {
+				if(this.currentTime) {
+					currentTime.text = (new Date()).toLocaleTimeString();
+				}
+			}
+			
+		]]>
+	</mx:Script>
+	
+	<mx:Canvas width="70%" height="90%" bottom="0" left="0" horizontalScrollPolicy="off" verticalScrollPolicy="off">
+		<mx:Image source="{_partyData.livePhoto.imageUrl}" />
+		
+		<mx:Canvas width="100%" height="100%" backgroundColor="0x000000" backgroundAlpha=".2" />
+		
+		<mx:Text id="majorStatus" color="0xffffff" fontSize="72" fontFamily="NeoSansIntel"
+			width="60%" height="100%" paddingTop="20" paddingBottom="20" paddingLeft="20" paddingRight="20"/>
+	</mx:Canvas>
+	
+	
+	<mx:HBox top="0" left="0" width="70%" backgroundColor="0x000000" height="10%" paddingTop="20" paddingLeft="20" >
+		<mx:Label id="currentTime" color="0xffffff" fontSize="24" fontFamily="NeoSansIntel" />	
+	</mx:HBox>
+	
+	<mx:List id="statusList" top="0" right="0" width="30%" height="100%" 
+		backgroundColor="0x000000" borderThickness="0" columnWidth="{this.statusList.width}"
+		paddingTop="0" paddingBottom="0" paddingLeft="0" paddingRight="0" variableRowHeight="true"
+		itemRenderer="com.creatorsproject.ui.tv.StatusCard" dataProvider="{_partyData.statuses}" />
+		
+	<mx:TitleWindow horizontalCenter="0" verticalCenter="0" title="Pick your server poison" id="initWindow">
+		<mx:Button label="Run Screen from Localhost" click="init()"/>
+		<mx:Button label="Run Screen from Production Server" click="init(false)" />
+	</mx:TitleWindow>
+		
+</mx:WindowedApplication>

@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:VBox xmlns:mx="http://www.adobe.com/2006/mxml" creationComplete="background()" dataChange="newData()" width="100%"
+	paddingTop="10" paddingBottom="10" paddingLeft="10" paddingRight="10">
+
+	<mx:Script>
+		<![CDATA[
+		
+			private function background():void {
+				this.height = this.getExplicitOrMeasuredHeight();
+				this.graphics.clear();
+				var gradBox:Matrix = new Matrix();
+				gradBox.createGradientBox(this.width, this.height, 90);
+				this.graphics.beginGradientFill("linear", [0xaaaaaa, 0xeeeeee], [1, 1], [0, 255], gradBox);
+				this.graphics.drawRect(0, 0, this.width, this.height);
+			}
+		
+			[Bindable]
+			public function get authorString():String {
+				return "-posted by " + this.data.user;
+			}
+			
+			public function newData():void {
+				if(this.data) {
+					this.author.text = this.authorString;
+				}
+			}
+		]]>
+	</mx:Script>
+
+	<mx:Label text="{this.data.time.toLocaleTimeString()}" id="time" styleName="statusSmall"/>
+	<mx:Text text="{this.data.status}" id="status" styleName="statusBig" width="100%"/>
+	<mx:Label text="" id="author" styleName="statusSmall"/>
+</mx:VBox>

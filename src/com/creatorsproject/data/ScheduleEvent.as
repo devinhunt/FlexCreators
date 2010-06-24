@@ -58,15 +58,8 @@ package com.creatorsproject.data
 										rawEvent.fields.name, 
 										rawEvent.fields.room, 
 										rawEvent.fields.creator,
-										dateFromJSON(rawEvent.fields.start),
-										dateFromJSON(rawEvent.fields.end));
-		}
-		
-		public static function dateFromJSON(jsonDate:String):Date {
-			var dateSet:Array = (jsonDate.split(" ")[0] as String).split("-");
-			var timeSet:Array = (jsonDate.split(" ")[1] as String).split(":");
-			
-			return new Date(dateSet[0], dateSet[1], dateSet[2], timeSet[0], timeSet[1]);
+										PartyData.dateFromJSON(rawEvent.fields.start),
+										PartyData.dateFromJSON(rawEvent.fields.end));
 		}
 	}
 }

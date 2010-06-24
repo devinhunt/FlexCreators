@@ -13,6 +13,8 @@
 
 	<mx:Script>
 		<![CDATA[
+			import com.creatorsproject.data.DataLocations;
+			import com.creatorsproject.ui.TouchUI;
 			import org.papervision3d.core.animation.channel.Channel3D;
 			import org.papervision3d.core.controller.AnimationController;
 			import org.papervision3d.core.log.event.PaperLoggerEvent;
@@ -41,13 +43,6 @@
 			import org.papervision3d.render.BasicRenderEngine;
 			import org.papervision3d.view.Viewport3D;
 			
-			[Bindable]
-			public static var URL_SERVER:String = "http://localhost:8000/";
-			public static const URL_SCHEDULE:String = "api/schedule";
-			public static const URL_CREATOR:String = "api/creator";
-			public static const URL_ROOM:String = "api/room";
-			public static const URL_FLOOR:String = "api/floor";
-			
 			// Singletoning!
 			public static var instance:main;
 		
@@ -59,6 +54,8 @@
 			
 			// Interaction!
 			private var _touchController:TouchController;
+			private var _moduleAnchors:Dictionary;
+			private var _focusedModule:TouchUI;
 			
 			// Data!
 			private var _partyData:PartyData;
@@ -86,7 +83,7 @@
 			
 			public function initSever():void {
 				instance = this;
-				URL_SERVER = this.serverUrlInput.text;
+				DataLocations.URL_SERVER = this.serverUrlInput.text;
 				_partyData = new PartyData();
 				_partyData.loadData();
 				_partyData.addEventListener(Event.COMPLETE, this.onDataSuccess);
@@ -123,26 +120,25 @@
 			}
 			
 			public function initInterface(event:Event = null):void {
-				// build our UI's
 				_eventUI = new EventUI(_partyData);
-				_creatorUI = new CreatorUI(_partyData.creators);
-				var cRad:Number = -2000;
-				//var eTheta:Number = 
-				
-				// setup them up in our world o' fun
-				// First, the events
 				_eventUI.rotationY = 90;
-				setUIPosition(_eventUI, 0);
 				_scene.addChild(_eventUI);
 				
-				// Second, creators
-				setUIPosition(_creatorUI, Math.PI / 5);
+				_creatorUI = new CreatorUI(_partyData.creators);
 				_scene.addChild(_creatorUI);
+				
+				// position the UI modules
+				_moduleAnchors = new Dictionary();
+				_moduleAnchors[_eventUI] = 0;
+				_moduleAnchors[_creatorUI] = Math.PI / 5;
+				setUIPosition(_eventUI, _moduleAnchors[_eventUI]);
+				setUIPosition(_creatorUI, _moduleAnchors[_creatorUI]);
 				
 				// finally, get the camera into place
 				_camera.z = -5000;
 				
 				//dump();
+				_focusedModule = _eventUI;
 			}
 			
 			private function dump():void {
@@ -188,13 +184,45 @@
 			// ____________________________________________ Interaction
 			
 			private function onSwipe(event:GestureEvent):void {
-				//trace("Got event of type " + event.type + " with delta " + event.delta);
+				if(event.type == GestureEvent.SWIPE) {
+					for (var key:Object in _moduleAnchors) {
+						if(key != _focusedModule) {
+							var currentDelta:Number = Math.abs(_camera.rotationX + _moduleAnchors[_focusedModule] * 180 / Math.PI);
+							var camDelta:Number = Math.abs(_camera.rotationX + _moduleAnchors[key] * 180 / Math.PI);
+							trace(camDelta + " " + currentDelta);
+							if(camDelta < currentDelta) {
+								trace("new active is " + key);
+								_focusedModule = key as TouchUI;
+								break;
+							}
+						}
+					}
+					
+					var c:Number = _camera.rotationX + (event.delta.y / 20);
+					_camera.rotationX = c;
+					_camera.z = -5000 * Math.cos(c * Math.PI / 180);
+					_camera.y = 5000 * Math.sin(c * Math.PI / 180);
+				}
 				
-				var c:Number = _camera.rotationX + (event.delta.y / 20);
+				if(event.type == GestureEvent.SWIPE_END) {
+					this.addEventListener(Event.ENTER_FRAME, onResetCamera);
+				}
+			}
+			
+			private function onResetCamera(event:Event):void {
+				var currentDelta:Number = Math.abs(_camera.rotationX - _moduleAnchors[_focusedModule] * 180 / Math.PI);
+				var c:Number;
+				
+				if(currentDelta < .1) {
+					c = _moduleAnchors[_focusedModule] * 180 / Math.PI;
+					this.removeEventListener(Event.ENTER_FRAME, onResetCamera);
+				} else {
+					c = _camera.rotationX + currentDelta / 10;
+				}
+				
 				_camera.rotationX = c;
 				_camera.z = -5000 * Math.cos(c * Math.PI / 180);
 				_camera.y = 5000 * Math.sin(c * Math.PI / 180);
-				
 			}
 			
 			// ____________________________________________ Demos
@@ -258,7 +286,7 @@
 	
 	<mx:TitleWindow verticalCenter="0" horizontalCenter="0" title="Connect to Touchserver" id="serverDialog" minWidth="256" visible="false">
 		<mx:Label id="connectPrompt" text="So, where is our sever located?" />
-		<mx:TextInput id="serverUrlInput" text="{URL_SERVER}" width="100%" />
+		<mx:TextInput id="serverUrlInput" text="{DataLocations.URL_SERVER}" width="100%" />
 		<mx:HBox horizontalAlign="center" width="100%">
 			<mx:Button label="Connect" click="initSever();" />
 		</mx:HBox>

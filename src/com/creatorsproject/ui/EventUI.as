@@ -75,6 +75,7 @@ package com.creatorsproject.ui
 		public function EventUI(schedule:PartyData)
 		{
 			super();
+			this.name = "Event Module";
 			_schedule = schedule;
 			_liveMarkers = [];
 			_detailChip = new EventDetailChip();
