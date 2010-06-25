@@ -1,11 +1,12 @@
 package com.creatorsproject.ui
 {
 	import com.creatorsproject.data.Creator;
+	import com.creatorsproject.data.PartyData;
+	import com.creatorsproject.input.TouchController;
+	import com.creatorsproject.ui.chips.CreatorDetailChip;
 	
-	import org.papervision3d.core.material.TriangleMaterial;
-	import org.papervision3d.materials.ColorMaterial;
+	import org.papervision3d.events.InteractiveScene3DEvent;
 	import org.papervision3d.objects.DisplayObject3D;
-	import org.papervision3d.objects.primitives.Plane;
 	
 	/**
 	 * The creators UI is the controller class and display object for the Creators Node 
@@ -18,16 +19,21 @@ package com.creatorsproject.ui
 		public static var chipWidth:Number = 300;
 		public static var chipHeight:Number = 300;
 		
-		private var _creators:Array;
+		private var _detailChip:CreatorDetailChip;
+		
+		private var _partyData:PartyData;
 		private var _state:String;
 		
 		private var _root:DisplayObject3D;
+		private var _targetChip:CreatorPlane;
 		
-		public function CreatorUI(creators:Array)
+		
+		public function CreatorUI(partyData:PartyData)
 		{
 			super();
 			this.name = "Creator Module";
-			_creators = creators;
+			_partyData = partyData;
+			_detailChip = new CreatorDetailChip();
 			this.assembleCreatorsUI();
 			this.state = "creators";
 		}
@@ -43,7 +49,11 @@ package com.creatorsproject.ui
 			
 			// and update the state
 			switch(_state) {
-				
+				case "creators":
+					if(fling.isFlinging) {
+						_root.rotationY += - fling.velocity.x / 10;
+					}
+					break;
 			}
 		}
 		
@@ -58,11 +68,26 @@ package com.creatorsproject.ui
 			trace("Creator UI :: Changing to state " + value);
 			
 			switch(_state) {
-				
+				case "creators":
+					if(main.instance.frontUI.contains(_detailChip)) {
+						main.instance.frontUI.removeChild(_detailChip);
+					}
+					break;
+					
+				case "creatorDetail":
+					main.instance.frontUI.addChild(_detailChip);
+					break;
 			}
 		}
 		
 		// ________________________________________________ Interaction
+		
+		private function onChipClick(event:InteractiveScene3DEvent):void {
+			if(TouchController.me.state == "touching" && _state == "creators") {
+				_targetChip = event.target as CreatorPlane;
+				this.state = "creatorDetail";
+			}
+		}
 		
 		// ________________________________________________ Building UI
 		
@@ -70,24 +95,25 @@ package com.creatorsproject.ui
 			
 			if(! _root) {
 				_root = new DisplayObject3D();
+				this.addChild(_root);
 			}
 			
-			var thetaStep:Number = Math.PI * 2 / _creators.length;
-			var radius:Number = 1.2 * chipWidth / Math.tan(thetaStep);
+			var radius:Number = 2600;
+			var creators:Array = _partyData.creators;
+			var thetaStep:Number = Math.PI * 2 / creators.length;
 			
-			for(var c:int = 0; c < _creators.length; c ++) {
-				var co:Creator = _creators[c];
-				var mat:TriangleMaterial = new ColorMaterial();
-				var plane:Plane = new Plane(mat, chipWidth, chipHeight);
+			
+			for(var c:int = 0; c < creators.length; c ++) {
+				var co:Creator = creators[c];
+				var plane:CreatorPlane = new CreatorPlane(co);
 				
 				plane.x = radius * Math.cos(thetaStep * c);
 				plane.z = radius * Math.sin(thetaStep * c);
-				plane.rotationY = 270 - (180 * (thetaStep * c) / Math.PI);
+				plane.rotationY = 270 - (180 * (thetaStep * c / Math.PI));
+				plane.addEventListener(InteractiveScene3DEvent.OBJECT_RELEASE, this.onChipClick);
 				
 				_root.addChild(plane);
 			}
-			
-			this.addChild(_root);
 		}
 	}
 }

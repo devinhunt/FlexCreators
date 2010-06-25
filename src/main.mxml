@@ -116,12 +116,16 @@
 				_scene.addChild(_mapUI);
 				setUIPosition(_mapUI, 20);
 				
+				_creatorUI = new CreatorUI(_partyData);
+				_scene.addChild(_creatorUI);
+				setUIPosition(_creatorUI, 0);
+				
 				_eventUI = new EventUI(_partyData);
 				_scene.addChild(_eventUI);
-				setUIPosition(_eventUI, 0);
+				setUIPosition(_eventUI, -20);
 				
 				_camMax = 30;
-				_camMin = -10;
+				_camMin = -30;
 				
 				// finally, get the camera into place
 				_camera.z = -5000;
@@ -179,14 +183,15 @@
 					var c:Number = _camera.rotationX + (event.delta.y / 20);
 					
 					var eventDelta:Number = Math.abs(_eventUI.rotationX - c);
+					var creatorDelta:Number = Math.abs(_creatorUI.rotationX - c);
 					var mapDelta:Number = Math.abs(_mapUI.rotationX - c);
 					
-					trace(eventDelta + " " + mapDelta);
-					
-					if(mapDelta < eventDelta) {
+					if(mapDelta == Math.min(mapDelta, eventDelta, creatorDelta)) {
 						_camTarget = -20;
-					} else {
+					} else if(creatorDelta == Math.min(mapDelta, eventDelta, creatorDelta)) {
 						_camTarget = 0;
+					} else {
+						_camTarget = 20;
 					}
 					
 					this.setCamLocation(c);
