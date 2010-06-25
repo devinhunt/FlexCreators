@@ -10,7 +10,7 @@ package com.creatorsproject.ui
 		// private var _width:Number;
 		// private var _height:Number;
 		
-		public function ScheduleMarker(title:String, format:TextFormat = null, w:Number = 100, h:Number = 100)
+		public function ScheduleMarker(title:String, format:TextFormat = null, w:Number = 100, h:Number = 50)
 		{
 			super();
 			
@@ -30,10 +30,13 @@ package com.creatorsproject.ui
 			text.multiline = true;
 			text.htmlText = title;
 			
+			text.x = 10;
+			text.y = h / 2 - text.textHeight / 2 - 3;
+			
 			if(format) {
 				text.setTextFormat(format);
 			} else {
-				var f:TextFormat = new TextFormat(null, null, 0xffffff);
+				var f:TextFormat = new TextFormat("Neo Sans Intel", null, 0xffffff);
 				text.setTextFormat(f);
 			}
 			

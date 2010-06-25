@@ -3,11 +3,11 @@
 	horizontalScrollPolicy="off" verticalScrollPolicy="off">
 
 	<mx:Style>
-		@font-face {
-			src: url("media/fonts/NeoSansIntel.ttf");
+		
+		.headerText {
 			font-family: NeoSansIntel;
-			font-style: normal;
-			font-weight: normal;
+			font-size: 24;
+			color: #ffffff;
 		}
 		
 		.statusSmall {
@@ -27,8 +27,19 @@
 	</mx:Style>
 
 	<mx:Script>
+
+	
 		<![CDATA[
-			import com.creatorsproject.data.DataLocations;
+		//				@font-face {
+		//			src: url("../media/fonts/NeoSansIntel.ttf");
+		//			font-family: NeoSansIntel;
+		//			font-style: normal;
+		//			font-weight: normal;
+		//		}
+		
+		
+			import com.creatorsproject.data.ScheduleEvent;
+			import com.creatorsproject.data.DataConstants;
 			import com.creatorsproject.data.PartyStatus;
 			import mx.events.CollectionEventKind;
 			import com.creatorsproject.ui.tv.StatusCard;
@@ -37,29 +48,90 @@
 		
 			[Bindable]
 			public var _partyData:PartyData;
+			public var _nextEvents:Array;
+			
+			public var _isAnimatingMajor:Boolean = false;
 			
 			/**
 			 * Entry Point
 			 */
-			public function init(isLocal = true):void {
-				DataLocations.isLocal = isLocal
+			public function init(isLocal:Boolean = true):void {
+				DataConstants.isLocal = isLocal
 				initWindow.visible = false;
 				
 				_partyData = new PartyData();
+				_partyData.addEventListener(Event.COMPLETE, onPartyDataComplete);
+				_partyData.addEventListener("newMajor", onNewMajor);
 				_partyData.statuses.addEventListener(CollectionEvent.COLLECTION_CHANGE, onStatusChange);
 				
-				//_partyData.loadData();
-				_partyData.updateStatuses();
-				_partyData.updateLivePhoto();
+				_partyData.loadData();
+				_partyData.startLiveUpdating();
+			}
+			
+			private function onPartyDataComplete(event:Event):void {
+				_nextEvents = _partyData.nextEvents;
+				setEventAlert();
+			}
+			
+			private function onNewMajor(event:Event):void {
+				var newMajor:PartyStatus = _partyData.latestMajor;
+				if(newMajor) {
+					this.majorStatus.text = newMajor.status;
+					if(! _isAnimatingMajor) {
+						_isAnimatingMajor = true;
+						this.addEventListener(Event.ENTER_FRAME, onMajorFrame);
+						step = 0;
+					}
+				}
+			}
+			
+			private var step:int = 0;
+			private var maxStep:int = 300;
+			
+			private function onMajorFrame(event:Event = null):void {
+				var g:Graphics = this.majorMatte.graphics;
+				var mag:Number;
+				var hold:Number = .05
+				
+				g.clear();
+				g.beginFill(0xff00ff, .8);
+				if(step < maxStep * hold) {
+					mag = this.majorMatte.width * Math.sin(step / (maxStep * hold) * Math.PI / 2);
+					g.drawRect(0, 0, mag, majorMatte.height);
+				} else if(step > maxStep * (1 - hold)){
+					mag = this.majorMatte.width * Math.sin((maxStep - step) / (maxStep * hold) * Math.PI / 2);
+					g.drawRect(this.majorMatte.width - mag, 0, mag, majorMatte.height);
+				} else {
+					g.drawRect(0, 0, this.majorMatte.width, this.majorMatte.height);
+				}
+				g.endFill();
+				
+				step ++;
+				if(step >= maxStep) {
+					g.clear();
+					this.removeEventListener(Event.ENTER_FRAME, onMajorFrame);
+					_isAnimatingMajor = false;
+				}
+			}
+			
+			public function setEventAlert():void {
+				if(_nextEvents.length < 1) {
+					return;
+				}
+				var currentDate:Date = new Date(2010, 6, 24, 1, 57, 28);
+				var event:ScheduleEvent = _nextEvents[0];
+				
+				var secs:int = ((currentDate.getTime() - event.startTime.getTime()) / 1000) % 60;
+				var mins:int = ((currentDate.getTime() - event.startTime.getTime()) / 1000 / 60) % 60;
+				var hours:int = ((currentDate.getTime() - event.startTime.getTime()) / 1000 / 60 / 60) % 24;
+				
+				var eventText:String = event.name + " in " + event.roomName + " in " + hours + ":" + mins + ":" + secs;
+				this.latestEvent.htmlText = eventText;
 			}
 			
 			private function onStatusChange(event:CollectionEvent):void {
 				switch(event.kind) {
 					case CollectionEventKind.ADD:
-						var newMajor:PartyStatus = _partyData.getLatestMajor();
-						if(newMajor) {
-							this.majorStatus.text = newMajor.status;
-						}
 						break;
 				}
 			}
@@ -67,6 +139,7 @@
 			private function tick():void {
 				if(this.currentTime) {
 					currentTime.text = (new Date()).toLocaleTimeString();
+					
 				}
 			}
 			
@@ -76,15 +149,17 @@
 	<mx:Canvas width="70%" height="90%" bottom="0" left="0" horizontalScrollPolicy="off" verticalScrollPolicy="off">
 		<mx:Image source="{_partyData.livePhoto.imageUrl}" />
 		
-		<mx:Canvas width="100%" height="100%" backgroundColor="0x000000" backgroundAlpha=".2" />
+		<mx:Canvas width="100%" height="100%" backgroundColor="0x000000" backgroundAlpha=".2" id="majorMatte" />
 		
 		<mx:Text id="majorStatus" color="0xffffff" fontSize="72" fontFamily="NeoSansIntel"
-			width="60%" height="100%" paddingTop="20" paddingBottom="20" paddingLeft="20" paddingRight="20"/>
+			width="70%" height="100%" paddingTop="20" paddingBottom="20" paddingLeft="20" paddingRight="20"/>
 	</mx:Canvas>
 	
 	
-	<mx:HBox top="0" left="0" width="70%" backgroundColor="0x000000" height="10%" paddingTop="20" paddingLeft="20" >
-		<mx:Label id="currentTime" color="0xffffff" fontSize="24" fontFamily="NeoSansIntel" />	
+	<mx:HBox top="0" left="0" width="70%" backgroundColor="0x000000" height="10%" paddingTop="20" paddingLeft="20" paddingRight="20" >
+		<mx:Label id="currentTime" styleName="headerText" />
+		<mx:Spacer height="10" width="100%" />
+		<mx:Label id="latestEvent" styleName="headerText" />
 	</mx:HBox>
 	
 	<mx:List id="statusList" top="0" right="0" width="30%" height="100%" 

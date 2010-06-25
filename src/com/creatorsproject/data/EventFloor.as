@@ -1,5 +1,7 @@
 package com.creatorsproject.data
 {
+	import com.creatorsproject.ui.chips.EventDetailChip;
+	
 	public class EventFloor
 	{
 		public var id:String;
@@ -15,6 +17,16 @@ package com.creatorsproject.data
 			this.name = name;
 			this.order = order;
 			this.rooms = []; 
+		}
+		
+		public function cullRooms(kill:Array):void {
+			var keeps:Array = []
+			for each(var room:EventRoom in rooms) {
+				if(kill.indexOf(room) == -1) {
+					keeps.push(room)
+				}
+			}
+			rooms = keeps;
 		}
 	}
 }

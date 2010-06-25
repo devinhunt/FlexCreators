@@ -1,12 +1,74 @@
 <?xml version="1.0" encoding="utf-8"?>
-<mx:VBox xmlns:mx="http://www.adobe.com/2006/mxml" width="800" height="600">
+<mx:VBox xmlns:mx="http://www.adobe.com/2006/mxml" width="800" height="600" creationComplete="initVideo()" enterFrame="onEnterFrame(event)">
 	
 	<mx:Script>
 		<![CDATA[
 			import com.creatorsproject.data.Creator;
+			import mx.controls.videoClasses.VideoPlayer;
 			
 			[Bindable]
 			public var creatorData:Creator;
+			
+			private var _video:Video;
+			
+			public var onMetaData:Object = onMetaDataFunc;
+			private var ns:NetStream;
+			
+			private function initVideo():void {
+				_video = new Video();
+				this.videoWrapper.addChild(_video);
+				
+			}
+			
+			public function loadVideo(videoName:String = "Takeshi-melterclip1_Ads.flv"):void {
+				var nc:NetConnection = new NetConnection();
+				nc.connect(null);
+				
+				ns = new NetStream(nc);
+				ns.client = this;
+				
+				_video.attachNetStream(ns);
+				
+				var fileUrl:String = File.applicationDirectory.url + "media/videos/" + videoName;
+				//var fileUrl:String = "/Users/devin/Documents/workspace/flex-creators/media/videos/Takeshi-melterclip1_Ads.flv" 
+				trace(fileUrl);
+				var f:File = new File(fileUrl);
+				
+				ns.bufferTime = 1;
+				ns.addEventListener(NetStatusEvent.NET_STATUS, onVideoStatus);
+				ns.addEventListener(StatusEvent.STATUS, onStatus);
+				ns.addEventListener(IOErrorEvent.IO_ERROR, onVideoIOError);
+				ns.play(f.url);
+			}
+			
+			private function onVideoIOError(event:IOErrorEvent):void {
+				trace(event.text);
+			}
+			
+			private function onStatus(event:StatusEvent):void {
+				trace(event.currentTarget);
+			}
+			
+			private function onVideoStatus(event:NetStatusEvent):void {
+				trace(event);
+				trace(event.info.code);
+			}
+			
+			private function onMetaDataFunc(metadata:Object):void {
+				trace(metadata.duration);
+				_video.width = metadata.width;
+				_video.height = metadata.height;
+			}
+			
+			private function onEnterFrame(event:Event):void {
+				if(ns) {
+					
+				}
+			}
+			
+			private function playVideo():void {
+				
+			}
 		]]>
 	</mx:Script>
 	
@@ -20,5 +82,8 @@
 		<mx:Text width="66%" text="Here is some related text" />
 	</mx:HBox>
 	
+	<mx:UIComponent id="videoWrapper">
+		
+	</mx:UIComponent>
 	
 </mx:VBox>

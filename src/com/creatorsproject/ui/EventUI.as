@@ -1,5 +1,6 @@
 package com.creatorsproject.ui
 {
+	import com.creatorsproject.data.DataConstants;
 	import com.creatorsproject.data.EventFloor;
 	import com.creatorsproject.data.EventRoom;
 	import com.creatorsproject.data.PartyData;
@@ -20,7 +21,6 @@ package com.creatorsproject.ui
 	import mx.effects.easing.Elastic;
 	
 	import org.papervision3d.core.geom.renderables.Vertex3D;
-	import org.papervision3d.core.math.Number3D;
 	import org.papervision3d.events.AnimationEvent;
 	import org.papervision3d.events.InteractiveScene3DEvent;
 	import org.papervision3d.materials.MovieMaterial;
@@ -29,11 +29,16 @@ package com.creatorsproject.ui
 	public class EventUI extends TouchUI implements ITickable
 	{
 		
+		public static const CURVE_RADIUS:Number = 3000;
+		
+		private var _root:DisplayObject3D;
+		
 		/** The schedule model we're displaying */
 		private var _schedule:PartyData;
 		
 		private var _widthPerHour:Number = 300;
 		private var _bandHeight:Number = 200;
+		private var _roomBandHeight:Number = 100;
 		
 		/** Step to divide the grid by, in hours */
 		private var _timeGranularity:Number = .5;
@@ -46,6 +51,9 @@ package com.creatorsproject.ui
 		
 		/** The 3D root of the room schedule */
 		private var _roomBands:DisplayObject3D;
+		
+		/** The 3D object that show time */
+		private var _timeBand:DisplayObject3D;
 		
 		/** Current items in the front UI */
 		private var _liveMarkers:Array;
@@ -83,9 +91,15 @@ package com.creatorsproject.ui
 			_tilebandCache = new Object();
 			_markerCache = new Object();
 			
+			_root = new DisplayObject3D();
+			this.addChild(_root);
+			_root.rotationY = 90;
+			_root.z = 500;
+			
 			
 			// things we should only need to do once
 			this.buildCurve();
+			this.assembleTimeUI();
 			this.assembleFloorUI();
 			this.state = "floors";
 		}
@@ -104,7 +118,7 @@ package com.creatorsproject.ui
 				case "floors":
 				case "rooms":
 					if(fling.isFlinging) {
-						this.rotationY += - fling.velocity.x / 10;
+						_root.rotationY += - fling.velocity.x / 10;
 					}
 					break;
 			}
@@ -123,24 +137,44 @@ package com.creatorsproject.ui
 			switch(_state) {
 				case "floors":
 					_targetFloorBand = null;
-					this.removeChild(_roomBands);
-					this.addChild(_floorBands);
+					
+					hideMarkers();
+					
+					var names:Array = [];
+					for each(var floor:EventFloor in _schedule.floors) {
+						names.push(floor.name);
+					}
+					
+					showMarkers(names);
+					
+					_root.removeChild(_roomBands);
+					_root.addChild(_floorBands);
 					break;
 				case "floorSelect":
 					this.assembleRoomUI(_targetFloorBand.data as EventFloor);
 					this.state = "floorToRoom";
 					break;
 				case "floorToRoom":
-					this.addChild(_roomBands);
+					_root.addChild(_roomBands);
 					this.floorToRoomAnimation();
 					//this.state = "rooms";
 					break;
 				case "rooms":
 					// TEMP TODO :: Need to be smarter about adding / removing these bands
-					this.removeChild(_floorBands);
+					
+					hideMarkers();
+					
+					var roomNames:Array = [];
+					for each(var room:EventRoom in (_targetFloorBand.data as EventFloor).rooms) {
+						roomNames.push(room.name);
+					}
+					
+					showMarkers(roomNames, 70);
+					
+					_root.removeChild(_floorBands);
 					break;
 				case "roomToFloor":
-					this.addChild(_floorBands);
+					_root.addChild(_floorBands);
 					this.roomToFloorAnimation();
 					//this.state = "floors"
 					break;
@@ -200,16 +234,32 @@ package com.creatorsproject.ui
 			}
 		}
 		
-		// ________________________________________________ Building UI 
+		// ________________________________________________ Building UI
+		
+		protected function assembleTimeUI():void {
+			_timeBand = new DisplayObject3D();
+			
+			var tex:MovieClip = this.makeTimeTexutre();
+			var mat:MovieMaterial = new MovieMaterial(tex);
+			
+			var timeline:TileBand = new TileBand(mat, _curve, 80);
+			
+			_timeBand.addChild(timeline);
+			_timeBand.y = 310;
+			_root.addChild(_timeBand);
+		}
+		 
 		protected function assembleFloorUI():void {
 			
 			if(! _floorBands) {
 				_floorBands = new DisplayObject3D();
-			}			
+			}
+			
+			var spacing:Number = _bandHeight + 5; 
 			
 			for(var f:int = 0; f < _schedule.floors.length; f ++) {
 				var band:TileBand = this.getFloorBand(_schedule.floors[f]);
-				band.y = (205 * _schedule.floors.length / 2) - 205 * f;
+				band.y = (spacing * (_schedule.floors.length - 1) / 2) - spacing * f - (spacing / 2);
 				band.addEventListener(InteractiveScene3DEvent.OBJECT_RELEASE, this.onFloorBandRelease);
 				_floorBands.addChild(band);
 			}
@@ -225,9 +275,11 @@ package com.creatorsproject.ui
 				_roomBands.removeChild(kid);
 			}
 			
+			var spacing:Number = _roomBandHeight + 5;
+			
 			for(var r:int = 0; r < floor.rooms.length; r ++) {
-				var band:TileBand = this.getRoomBand(floor.rooms[r]);
-				band.y = (205 * floor.rooms.length / 2) - 205 * r;
+				var band:TileBand = this.getRoomBand(floor.rooms[r], DataConstants.roomColors[floor.name], DataConstants.floorColors[floor.name]);
+				band.y = (spacing * (floor.rooms.length - 1) / 2) - spacing * r - (spacing / 2);
 				_roomBands.addChild(band);
 			}
 		}
@@ -246,13 +298,13 @@ package com.creatorsproject.ui
 			return _tilebandCache[floor.name];
 		}
 		
-		protected function getRoomBand(room:EventRoom):TileBand {
+		protected function getRoomBand(room:EventRoom, color:uint = 0xff00ff, floorColor:uint = 0xff00ff):TileBand {
 			if(! _tilebandCache[room.name]) {
-				var tex:MovieClip = this.makeRoomTexture(room, _bandHeight);
-				var mat:MovieMaterial = new MovieMaterial(tex, false, false, true);
+				var tex:MovieClip = this.makeRoomTexture(room, _roomBandHeight, color, floorColor);
+				var mat:MovieMaterial = new MovieMaterial(tex, true, false, false);
 				mat.smooth = true;
 				mat.interactive = true;
-				var band:TileBand = new TileBand(mat, _curve, _bandHeight);
+				var band:TileBand = new TileBand(mat, _curve, _roomBandHeight);
 				band.data = room;
 				band.addEventListener(InteractiveScene3DEvent.OBJECT_RELEASE, this.onRoomBandRelease);
 				_tilebandCache[room.name] = band;
@@ -272,12 +324,16 @@ package com.creatorsproject.ui
 			var tex:MovieClip = new MovieClip();
 			var heightPerRoom:Number = texHeight / floor.rooms.length;
 			
-			tex.graphics.beginFill(0x555555);
+			
+			var floorColor:uint = DataConstants.floorColors[floor.name];
+			var roomColor:uint = DataConstants.roomColors[floor.name];
+			
+			tex.graphics.beginFill(floorColor);
 			tex.graphics.drawRect(0, 0, _schedule.totalHours * _widthPerHour, texHeight);
-			tex.graphics.endFill();
+			tex.graphics.endFill(); 
 			
 			for(var r:int = 0; r < floor.rooms.length; r++) {
-				this.drawRoomTex(tex, floor.rooms[r], (texHeight / floor.rooms.length) * r, (texHeight / floor.rooms.length));
+				this.drawRoomTex(tex, floor.rooms[r], (texHeight / floor.rooms.length) * r, (texHeight / floor.rooms.length), roomColor);
 			}
 			
 			return tex;
@@ -290,43 +346,69 @@ package com.creatorsproject.ui
 		 * @return 
 		 * 
 		 */		
-		private function makeRoomTexture(room:EventRoom, texHeight:Number = 100):MovieClip {
+		private function makeRoomTexture(room:EventRoom, texHeight:Number = 100, color:uint = 0xff00ff, floorColor:uint = 0xff00ff):MovieClip {
 			var tex:MovieClip = new MovieClip();
-			
-			tex.graphics.beginFill(0x555555);
+			tex.graphics.beginFill(floorColor);
 			tex.graphics.drawRect(0, 0, _schedule.totalHours * _widthPerHour, texHeight);
-			tex.graphics.endFill();
+			tex.graphics.endFill(); 
 			
-			this.drawRoomTex(tex, room, 0, texHeight);
+			this.drawRoomTex(tex, room, 0, texHeight, color);
 			
 			return tex;
 		}
 		
-		private function drawRoomTex(parent:MovieClip, room:EventRoom, top:Number, height:Number):void {
+		private function drawRoomTex(parent:MovieClip, room:EventRoom, top:Number, height:Number, color:uint = 0xff00ff):void {
 			var g:Graphics = parent.graphics;
+			var spacing:Number = 4;
 			for(var e:int = 0; e < room.events.length; e ++) {
 				var event:ScheduleEvent = room.events[e];
 					var startHr:Number = (event.startTime.getTime() - _schedule.startDate.getTime()) / 1000 / 60 / 60;
 					var endHr:Number = (event.endTime.getTime() - _schedule.startDate.getTime()) / 1000 / 60 / 60;
 					
-					g.beginFill(0xff00ff);
-					g.drawRect(startHr * _widthPerHour, 
-											top, 
-											(endHr - startHr) * _widthPerHour,
-											height);
+					g.beginFill(color);
+					g.drawRoundRect(startHr * _widthPerHour + spacing, 
+											top + spacing, 
+											(endHr - startHr) * _widthPerHour - (spacing * 2),
+											height - (spacing * 2), 3);
 					g.endFill();
 					
 					
 					var text:TextField = new TextField();
 					text.htmlText = event.name;
 					text.x = startHr * _widthPerHour + 5;
-					text.y = top + 5;
+					text.y = top + height / 2 - 18;
 					text.width = (endHr - startHr) * _widthPerHour - 10;
-					text.height = height - 5;
-					var format:TextFormat = new TextFormat("NeoSansIntel", 36);
+					text.height = height / 2 + 18;
+					
+					var format:TextFormat = new TextFormat("Neo Sans Intel", 36);
 					text.setTextFormat(format);
 					parent.addChild(text); 
 			}
+		}
+		
+		private function makeTimeTexutre():MovieClip {
+			var totalTicks:int = _schedule.totalHours;
+			
+			var tex:MovieClip = new MovieClip();
+			var g:Graphics = tex.graphics;
+			
+			g.beginFill(0xffffff);
+			g.drawRect(0, 0, _schedule.totalHours * _widthPerHour, 80);
+			g.endFill(); 
+			
+			for(var t:int = 0; t < totalTicks; t ++) {
+				var text:TextField = new TextField();
+				text.htmlText = t + ":00";
+				text.height = 70;
+				text.y = 10;
+				text.x = t * _widthPerHour;
+					
+				var format:TextFormat = new TextFormat("Neo Sans Intel", 36);
+				text.setTextFormat(format);
+				tex.addChild(text);
+			}
+			
+			return tex;
 		}
 		
 		// ________________________________________________ UI Transitions
@@ -346,7 +428,7 @@ package com.creatorsproject.ui
 		}
 		
 		private function floorToRoomAnimation():void {
-			var ac:AnimationController = new AnimationController(200);
+			var ac:AnimationController = new AnimationController(300);
 			ac.func = Elastic.easeOut;
 			
 			for each(var band:TileBand in _floorBands.children) {
@@ -358,7 +440,7 @@ package com.creatorsproject.ui
 			
 			for each(band in _roomBands.children) {
 				ap = new AnimationProfile(band);
-				ap.startScale = 2;
+				ap.startScale = 1.5;
 				ap.endScale = 1;
 				ac.addAnimationProfile(ap);
 			}
@@ -367,7 +449,7 @@ package com.creatorsproject.ui
 		}
 		
 		private function roomToFloorAnimation():void {
-			var ac:AnimationController = new AnimationController(200);
+			var ac:AnimationController = new AnimationController(300);
 			ac.func = Elastic.easeOut;
 			
 			for each(var band:TileBand in _floorBands.children) {
@@ -378,7 +460,7 @@ package com.creatorsproject.ui
 			
 			for each(band in _roomBands.children) {
 				ap = new AnimationProfile(band);
-				ap.endScale = 2;
+				ap.endScale = 1.5;
 				ac.addAnimationProfile(ap);
 			}
 			ac.addEventListener(AnimationEvent.COMPLETE, onTransitionComplete);
@@ -392,7 +474,7 @@ package com.creatorsproject.ui
 			var totalHours:Number = _schedule.totalHours;
 			
 			var segments:int = int(totalHours / _timeGranularity);
-			var radius:Number = 2000;
+			var radius:Number = CURVE_RADIUS;
 			var step:Number = Math.atan2(_widthPerHour * _timeGranularity, radius);
 			
 			for (var seg:int = 0; seg < segments + 1; seg ++) {
@@ -416,12 +498,12 @@ package com.creatorsproject.ui
 		 * Displays markers on the front UI for the current display 
 		 * @param labels The names of the markers to show
 		 */		
-		private function showMarkers(labels:Array):void {
+		private function showMarkers(labels:Array, spacing:Number = 150):void {
 			for(var i:int = 0; i < labels.length; i ++) {
 				var marker:ScheduleMarker = getMarker(labels[i]);
 				
 				marker.x = 10;
-				marker.y = i * 105 + 184;
+				marker.y = (main.instance.frontUI.height / 2) - (spacing * (labels.length - 1) / 2) + spacing * i - 20;
 				
 				_liveMarkers.push(marker);
 				main.instance.frontUI.addChild(marker);
@@ -429,8 +511,8 @@ package com.creatorsproject.ui
 		}
 		
 		private function hideMarkers():void {
-			for each(var marker:ScheduleMarker in _liveMarkers) {
-				main.instance.frontUI.removeChild(marker);
+			while(_liveMarkers.length > 0) {
+				main.instance.frontUI.removeChild(_liveMarkers.pop());
 			}
 		}
 		

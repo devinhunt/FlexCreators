@@ -12,7 +12,7 @@ package com.creatorsproject.data
 		{
 			id = raw.pk;
 			created = PartyData.dateFromJSON(raw.fields.created);
-			imageUrl = DataLocations.mediaUrl + raw.fields.image;
+			imageUrl = DataConstants.mediaUrl + raw.fields.image;
 		}
 
 	}

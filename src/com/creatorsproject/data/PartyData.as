@@ -5,8 +5,10 @@ package com.creatorsproject.data
 	import flash.events.Event;
 	import flash.events.EventDispatcher;
 	import flash.events.IOErrorEvent;
+	import flash.events.TimerEvent;
 	import flash.net.URLLoader;
 	import flash.net.URLRequest;
+	import flash.utils.Timer;
 	
 	import mx.collections.ArrayCollection;
 
@@ -19,10 +21,14 @@ package com.creatorsproject.data
 	{
 		
 		/** Interval (in milliseconds) that we check for new statuses */
-		public static const REFRESH_TIME:int = 1000;
+		public static const REFRESH_TIME:int = 5000;
 		
 		/** The maximum number of status we'll keep in local memory */
 		public static const MAX_STATUS:int = 20;
+		
+		/** Are we pulling live updates ? */
+		private var _isLiveUpdating:Boolean = false;
+		private var _liveTimer:Timer;
 		
 		/** True if we have asked the server for a schedule */		
 		private var _scheduleRequested:Boolean = false;
@@ -44,6 +50,12 @@ package com.creatorsproject.data
 		/** Creators involved with this party */
 		private var _creators:Array;
 		
+		/** All the creators chips */
+		private var _chips:Array;
+		
+		/** All the videos we have */
+		private var _videos:Array;
+		
 		/** Array of status, with the newest ones at the end */
 		[Bindable]
 		public var statuses:ArrayCollection;
@@ -52,9 +64,11 @@ package com.creatorsproject.data
 		[Bindable]
 		public var livePhoto:PartyPhoto;
 		
+		
 		/** The newest status id we have
 		 *  We are making the very lazy assumption that a larger primary key === newer */
 		private var _latestStatusId:int = -1;
+		private var _latestMajor:PartyStatus;
 		
 		private var _startDate:Date;
 		private var _endDate:Date;
@@ -69,12 +83,37 @@ package com.creatorsproject.data
 		{
 			_events = [];
 			statuses = new ArrayCollection();
+			_liveTimer = new Timer(REFRESH_TIME);
+			_liveTimer.addEventListener(TimerEvent.TIMER, onUpdateTimer);
 		}
 		
 		// ______________________________________ Status Updating and Cycling
 		
+		public function startLiveUpdating():void {
+			_isLiveUpdating = true;
+			_liveTimer.start();
+		}
+		
+		public function stopLiveUpdating():void {
+			_isLiveUpdating = false;
+			_liveTimer.stop()
+		}
+		
+		private function onUpdateTimer(event:TimerEvent):void {
+			this.updateLivePhoto();
+			this.updateStatuses();
+		}
+		
 		public function updateStatuses():void {
-			var url:String = DataLocations.serverUrl + DataLocations.URL_STATUS;
+			var url:String = DataConstants.serverUrl;
+			
+			if(_latestStatusId >= 0) {
+				url += DataConstants.URL_STATUS_SINCE + _latestStatusId;
+			} else {
+				url += DataConstants.URL_STATUS;
+			}
+			
+			
 			var statusLoader:URLLoader = new URLLoader();
 			statusLoader.addEventListener(Event.COMPLETE, this.onStatusReceived);
 			statusLoader.addEventListener(IOErrorEvent.IO_ERROR, this.onJsonIOError);
@@ -88,15 +127,33 @@ package com.creatorsproject.data
 			var rawData:String = (event.target as URLLoader).data;
 			var rawStatuses:Object = JSON.decode(rawData)
 			var newStatuses:Array = [];
+			var newMajorFound:Boolean = false;
 			
 			for each(var status:Object in rawStatuses) {
 				var newStatus:PartyStatus = new PartyStatus(status)
-				if( newStatus.state != "dead") { 
-					statuses.addItem(newStatus);
+				if( newStatus.state != "dead") {
+					
+					if(newStatus.state == "minor") {
+						statuses.addItem(newStatus);
+					} else if(_latestMajor && _latestMajor.id < newStatus.id){
+						_latestMajor = newStatus;
+						newMajorFound = true;
+					} else {
+						_latestMajor = newStatus;
+						newMajorFound = true;
+					}
+					
+					if(newStatus.id > _latestStatusId) {
+						_latestStatusId = newStatus.id;
+					}
 					
 					if(statuses.length > MAX_STATUS) {
 						statuses.removeItemAt(0);
 					}
+				}
+				
+				if(newMajorFound) {
+					this.dispatchEvent(new Event("newMajor"));
 				}
 			}
 		}
@@ -104,7 +161,7 @@ package com.creatorsproject.data
 		// ______________________________________ Photo Updating and Cycling
 		
 		public function updateLivePhoto():void {
-			var url:String = DataLocations.serverUrl + DataLocations.URL_PHOTO_LATEST;
+			var url:String = DataConstants.serverUrl + DataConstants.URL_PHOTO_LATEST;
 			var photoLoader:URLLoader = new URLLoader();
 			photoLoader.addEventListener(Event.COMPLETE, this.onPhotoReceived);
 			photoLoader.addEventListener(IOErrorEvent.IO_ERROR, this.onJsonIOError);
@@ -128,6 +185,9 @@ package com.creatorsproject.data
 		 * 1) Floors
 		 * 2) Rooms
 		 * 3) Events
+		 * 4) Creators
+		 * 5) Videos
+		 * 5) Creator Chips
 		 * And the the full schedule tree is reconsistuted. This makes the processing quick and efficient and allows
 		 * us to keep our json requests to a minimum.
 		 */
@@ -137,64 +197,27 @@ package com.creatorsproject.data
 			_sceduleRecieved = false;
 			
 			var floorLoader:URLLoader = new URLLoader();
-			floorLoader.addEventListener(Event.COMPLETE, this.onFloorsReceived);
-			floorLoader.addEventListener(IOErrorEvent.IO_ERROR, this.onJsonIOError);
-			floorLoader.load(new URLRequest(DataLocations.URL_SERVER + DataLocations.URL_FLOOR));
-			
-			var creatorLoader:URLLoader = new URLLoader();
-			creatorLoader.addEventListener(Event.COMPLETE, this.onCreatorsRecieved);
-			creatorLoader.addEventListener(IOErrorEvent.IO_ERROR, this.onJsonIOError);
-			creatorLoader.load(new URLRequest(DataLocations.URL_SERVER + DataLocations.URL_CREATOR));
+			floorLoader.addEventListener(Event.COMPLETE, onFloorsReceived);
+			floorLoader.addEventListener(IOErrorEvent.IO_ERROR, onJsonIOError);
+			floorLoader.load(new URLRequest(DataConstants.serverUrl + DataConstants.URL_FLOOR));
 		}
 		
-		/**
-		 * JSON loaded from the server request 
-		 * @param event The complete event
-		 */
-		public function onEventsRecieved(event:Event):void {
-			(event.target as URLLoader).removeEventListener(Event.COMPLETE, this.onEventsRecieved);
+		public function onFloorsReceived(event:Event):void {
+			(event.target as URLLoader).removeEventListener(Event.COMPLETE, this.onFloorsReceived);
 			(event.target as URLLoader).removeEventListener(IOErrorEvent.IO_ERROR, this.onJsonIOError);
 			
 			var rawData:String = (event.target as URLLoader).data;
-			_rawEventData = JSON.decode(rawData)
-			_events = [];
+			_rawFloorData = JSON.decode(rawData)
+			_floors = [];
 			
-			for each(var rawEvent:Object in _rawEventData) {
-				_events.push(ScheduleEvent.createEventFromJson(rawEvent));
+			for each(var rawFloor:Object in _rawFloorData) {
+				_floors.push(new EventFloor(rawFloor.pk, rawFloor.fields.name, parseInt(rawFloor.fields.order))); 
 			}
 			
-			// associate our events with their room
-			for each(var room:EventRoom in _rooms) {
-				for each(var e:ScheduleEvent in _events) {
-					if(e.roomId == room.id) {
-						room.addEvent(e);
-					}
-				}
-			}
-			
-			// and set out constants;
-			if(_events.length > 0) {
-				var sd:Date = new Date((_events[0] as ScheduleEvent).startTime.getTime());
-				var ed:Date = new Date((_events[0] as ScheduleEvent).endTime.getTime());
-				
-				for each(var ev:ScheduleEvent in _events) {
-					if(ev.startTime.getTime() < sd.getTime()) {
-						sd.setTime(ev.startTime.getTime());
-					}
-					
-					if(ev.endTime.getTime() > ed.getTime()) {
-						ed.setTime(ev.endTime.getTime());
-					}
-				}
-				_startDate = sd
-				_endDate = ed;
-			}
-			
-			// and we're done!
-			this._sceduleRecieved = true;
-			if(_creatorsRecieved) {
-				this.dispatchEvent(new Event(Event.COMPLETE));
-			}
+			var roomLoader:URLLoader = new URLLoader();
+			roomLoader.addEventListener(Event.COMPLETE, this.onRoomsRevieved);
+			roomLoader.addEventListener(IOErrorEvent.IO_ERROR, this.onJsonIOError);
+			roomLoader.load(new URLRequest(DataConstants.serverUrl + DataConstants.URL_ROOM));
 		}
 		
 		public function onRoomsRevieved(event:Event):void {
@@ -222,25 +245,69 @@ package com.creatorsproject.data
 			var eventLoader:URLLoader = new URLLoader();
 			eventLoader.addEventListener(Event.COMPLETE, this.onEventsRecieved);
 			eventLoader.addEventListener(IOErrorEvent.IO_ERROR, this.onJsonIOError);
-			eventLoader.load(new URLRequest(DataLocations.URL_SERVER + DataLocations.URL_SCHEDULE));
+			eventLoader.load(new URLRequest(DataConstants.serverUrl + DataConstants.URL_SCHEDULE));
 		}
 		
-		public function onFloorsReceived(event:Event):void {
-			(event.target as URLLoader).removeEventListener(Event.COMPLETE, this.onFloorsReceived);
+		public function onEventsRecieved(event:Event):void {
+			(event.target as URLLoader).removeEventListener(Event.COMPLETE, this.onEventsRecieved);
 			(event.target as URLLoader).removeEventListener(IOErrorEvent.IO_ERROR, this.onJsonIOError);
 			
 			var rawData:String = (event.target as URLLoader).data;
-			_rawFloorData = JSON.decode(rawData)
-			_floors = [];
+			_rawEventData = JSON.decode(rawData)
+			_events = [];
 			
-			for each(var rawFloor:Object in _rawFloorData) {
-				_floors.push(new EventFloor(rawFloor.pk, rawFloor.fields.name, parseInt(rawFloor.fields.order))); 
+			for each(var rawEvent:Object in _rawEventData) {
+				_events.push(ScheduleEvent.createEventFromJson(rawEvent));
 			}
 			
-			var roomLoader:URLLoader = new URLLoader();
-			roomLoader.addEventListener(Event.COMPLETE, this.onRoomsRevieved);
-			roomLoader.addEventListener(IOErrorEvent.IO_ERROR, this.onJsonIOError);
-			roomLoader.load(new URLRequest(DataLocations.URL_SERVER + DataLocations.URL_ROOM));
+			// associate our events with their room
+			for each(var room:EventRoom in _rooms) {
+				for each(var e:ScheduleEvent in _events) {
+					if(e.roomId == room.id) {
+						
+						room.addEvent(e);
+					}
+				}
+			}
+			
+			var finalRooms:Array = [];
+			var toRemove:Array = [];
+			for each(room in _rooms) {
+				if(room.events.length > 0) {
+					finalRooms.push(room);
+				} else {
+					toRemove.push(room);
+				}
+			}
+			
+			for each(var floor:EventFloor in _floors) {
+				floor.cullRooms(toRemove);
+			}
+			
+			_rooms = finalRooms;
+		
+			// and set out constants;
+			if(_events.length > 0) {
+				var sd:Date = new Date((_events[0] as ScheduleEvent).startTime.getTime());
+				var ed:Date = new Date((_events[0] as ScheduleEvent).endTime.getTime());
+				
+				for each(var ev:ScheduleEvent in _events) {
+					if(ev.startTime.getTime() < sd.getTime()) {
+						sd.setTime(ev.startTime.getTime());
+					}
+					
+					if(ev.endTime.getTime() > ed.getTime()) {
+						ed.setTime(ev.endTime.getTime());
+					}
+				}
+				_startDate = sd
+				_endDate = ed;
+			}
+			
+			var eventLoader:URLLoader = new URLLoader();
+			eventLoader.addEventListener(Event.COMPLETE, this.onCreatorsRecieved);
+			eventLoader.addEventListener(IOErrorEvent.IO_ERROR, this.onJsonIOError);
+			eventLoader.load(new URLRequest(DataConstants.serverUrl + DataConstants.URL_CREATOR));
 		}
 		
 		public function onCreatorsRecieved(event:Event):void {
@@ -255,10 +322,46 @@ package com.creatorsproject.data
 				_creators.push(new Creator(rawCreator));
 			}
 			
-			this._creatorsRecieved = true;
-			if(_sceduleRecieved) {
-				this.dispatchEvent(new Event(Event.COMPLETE));
+			var eventLoader:URLLoader = new URLLoader();
+			eventLoader.addEventListener(Event.COMPLETE, this.onVideosRecieved);
+			eventLoader.addEventListener(IOErrorEvent.IO_ERROR, this.onJsonIOError);
+			eventLoader.load(new URLRequest(DataConstants.serverUrl + DataConstants.URL_VIDEO));
+			
+		}
+		
+		public function onVideosRecieved(event:Event):void {
+			(event.target as URLLoader).removeEventListener(Event.COMPLETE, this.onVideosRecieved);
+			(event.target as URLLoader).removeEventListener(IOErrorEvent.IO_ERROR, this.onJsonIOError);
+			
+			var rawData:String = (event.target as URLLoader).data;
+			var rawVideoData:Object = JSON.decode(rawData)
+			this._videos = [];
+			
+			for each(var raw:Object in rawVideoData) {
+				_videos.push(new PartyVideo(raw));
 			}
+			
+			var eventLoader:URLLoader = new URLLoader();
+			eventLoader.addEventListener(Event.COMPLETE, this.onCreatorChipsReciever);
+			eventLoader.addEventListener(IOErrorEvent.IO_ERROR, this.onJsonIOError);
+			eventLoader.load(new URLRequest(DataConstants.serverUrl + DataConstants.URL_CREATOR_CHIPS));
+		}
+		
+		public function onCreatorChipsReciever(event:Event):void {
+			(event.target as URLLoader).removeEventListener(Event.COMPLETE, this.onCreatorChipsReciever);
+			(event.target as URLLoader).removeEventListener(IOErrorEvent.IO_ERROR, this.onJsonIOError);
+			
+			var rawData:String = (event.target as URLLoader).data;
+			var rawChips:Object = JSON.decode(rawData)
+			this._chips = [];
+			
+			for each(var raw:Object in rawChips) {
+				_chips.push(new PartyCreatorChip(raw));
+			}
+			
+			// and we're done!
+			this._sceduleRecieved = true;
+			this.dispatchEvent(new Event(Event.COMPLETE));
 		}
 		
 		/**
@@ -282,13 +385,22 @@ package com.creatorsproject.data
 		/**
 		 * Returns the latest major alert we have in the system
 		 */
-		public function getLatestMajor():PartyStatus {
-			for each(var status:PartyStatus in statuses) {
-				if(status.state == "major") {
-					return status;
+		public function get latestMajor():PartyStatus {
+			return _latestMajor;
+		}
+		
+		public function get nextEvents():Array {
+			var currentDate:Date = new Date(2010, 6, 24, 1, 57, 28)
+			var events:Array = []
+			var threshold:Number = .5;			// in hours
+			
+			for each(var event:ScheduleEvent in _events) {
+				if(Math.abs((currentDate.getTime() - event.startTime.getTime()) / 1000 / 60 / 60) < .5) {
+					events.push(event);
 				}
 			}
-			return null;
+			
+			return events;
 		}
 		
 		/**
