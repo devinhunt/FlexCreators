@@ -5,6 +5,7 @@ package com.creatorsproject.ui
 	import com.creatorsproject.data.PartyData;
 	import com.creatorsproject.data.PartyEvent;
 	import com.creatorsproject.input.TouchController;
+	import com.creatorsproject.input.events.GestureEvent;
 	import com.creatorsproject.ui.transitions.AnimationController;
 	import com.creatorsproject.ui.transitions.AnimationProfile;
 	
@@ -56,19 +57,32 @@ package com.creatorsproject.ui
 		public function assembleMapUI():void {
 			_root = new DisplayObject3D();
 			
-			var rad:Number = -2200;
-			
 			var mat:BitmapMaterial = new BitmapMaterial((new _map1Image() as BitmapAsset).bitmapData, true)
+			mat.smooth = true;
 			mat.interactive = true;
 			_map1 = new Plane(mat, 612, 856, 4, 4);
 			
 			mat = new BitmapMaterial((new _map2Image() as BitmapAsset).bitmapData, true)
+			mat.smooth = true;
 			mat.interactive = true;
 			_map2 = new Plane(mat, 612, 856, 4, 4);
 			
 			mat = new BitmapMaterial((new _map3Image() as BitmapAsset).bitmapData, true)
+			mat.smooth = true;
 			mat.interactive = true;
 			_map3 = new Plane(mat, 612, 856, 4, 4);
+			
+			resetMaps();
+			
+			_root.addChild(_map1);
+			_root.addChild(_map2);
+			_root.addChild(_map3);
+			
+			this.addChild(_root);
+		}
+		
+		public function resetMaps():void {
+			var rad:Number = -2300;
 			
 			_map1.x = rad * Math.sin(angle * Math.PI / 180);
 			_map1.z = rad * Math.cos(angle * Math.PI / 180);
@@ -85,11 +99,17 @@ package com.creatorsproject.ui
 			_map3.rotationY = -angle;
 			_map3.addEventListener(InteractiveScene3DEvent.OBJECT_RELEASE, this.onMapOverviewRelease);
 			
-			_root.addChild(_map1);
-			_root.addChild(_map2);
-			_root.addChild(_map3);
-			
-			this.addChild(_root);
+			if(_targetMap) {
+				var ac:AnimationController = new AnimationController(300);
+				ac.addEventListener(AnimationEvent.COMPLETE, onTransitionComplete)
+				ac.func = Elastic.easeOut;
+	
+				// the map
+				var ap:AnimationProfile = new AnimationProfile(_targetMap);
+				ap.endScale = 1;
+				ac.addAnimationProfile(ap);
+				ac.start();
+			}
 		}
 		
 		// ________________________________________________ Stating and Updating
@@ -128,6 +148,10 @@ package com.creatorsproject.ui
 			
 			switch(_state) {
 				case "overview":
+					if(oldState == "focus") {
+						hideMarkers();
+						resetMaps();
+					}
 					break;
 				case "focus":
 					centerMap();
@@ -137,6 +161,12 @@ package com.creatorsproject.ui
 		}
 		
 		// ________________________________________________ User Interaction
+		
+		override protected function onMatteClick(event:GestureEvent):void {
+			if(_state == "focus") {
+				this.state = "overview";
+			}
+		}
 		
 		private function onMapOverviewRelease(event:InteractiveScene3DEvent):void {
 			if(TouchController.me.state == "touching" && _state == "overview") {
@@ -176,7 +206,7 @@ package com.creatorsproject.ui
 		}
 		
 		private function onTransitionComplete(event:AnimationEvent):void {
-			
+			(event.target as AnimationController).removeEventListener(AnimationEvent.COMPLETE, onTransitionComplete);
 		}
 		
 		private function updateMapFocus():void {
@@ -201,6 +231,7 @@ package com.creatorsproject.ui
 					marker.x = room.x / 1.22 + pushx;
 					marker.y = room.y / 1.22 + pushy;
 					main.instance.frontUI.addChild(marker)
+					_liveMarkers.push(marker);
 				}
 			}
 		}

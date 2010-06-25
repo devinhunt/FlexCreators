@@ -7,18 +7,12 @@
 			import com.creatorsproject.ui.MapUI;
 			import com.creatorsproject.data.DataConstants;
 			import com.creatorsproject.ui.TouchUI;
-			import org.papervision3d.core.animation.channel.Channel3D;
-			import org.papervision3d.core.controller.AnimationController;
-			import org.papervision3d.core.log.event.PaperLoggerEvent;
-			import org.papervision3d.core.log.PaperLogger;
 			import org.papervision3d.core.math.Number3D;
 			import com.creatorsproject.input.events.GestureEvent;
 			import com.creatorsproject.input.TouchController;
 			import com.creatorsproject.ui.CreatorUI;
 			import com.creatorsproject.ui.ScheduleMarker;
-			import com.creatorsproject.ui.textures.TextTexture;
 			import org.papervision3d.materials.MovieMaterial;
-			import com.creatorsproject.ui.textures.TextTexture;
 			import org.papervision3d.objects.DisplayObject3D;
 			import com.creatorsproject.geom.TileBand;
 			import org.papervision3d.core.geom.renderables.Vertex3D;
@@ -59,6 +53,10 @@
 			private var _eventUI:EventUI;
 			private var _creatorUI:CreatorUI;
 			private var _mapUI:MapUI;
+			
+			private var _camMax:Number;
+			private var _camMin:Number;
+			private var _camTarget:Number;
 			
 			// ____________________________________________ Application Setup
 			
@@ -116,28 +114,17 @@
 				
 				_mapUI = new MapUI(_partyData);
 				_scene.addChild(_mapUI);
-				setUIPosition(_mapUI, 0);
+				setUIPosition(_mapUI, 20);
 				
-				//_eventUI = new EventUI(_partyData);
-				//_scene.addChild(_eventUI);
+				_eventUI = new EventUI(_partyData);
+				_scene.addChild(_eventUI);
+				setUIPosition(_eventUI, 0);
 				
-				//_creatorUI = new CreatorUI(_partyData.creators);
-				//_scene.addChild(_creatorUI);
-				
-				// position the UI modules
-				
-				//_moduleAnchors = new Dictionary();
-				//_moduleAnchors[_eventUI] = 0;
-				//_moduleAnchors[_creatorUI] = Math.PI / 5;
-				//setUIPosition(_eventUI, _moduleAnchors[_eventUI]);
-				//setUIPosition(_creatorUI, _moduleAnchors[_creatorUI]);
-				
+				_camMax = 30;
+				_camMin = -10;
 				
 				// finally, get the camera into place
 				_camera.z = -5000;
-				
-				//dump();
-				//_focusedModule = _eventUI;
 			}
 			
 			private function dump():void {
@@ -152,12 +139,12 @@
 			}
 			
 			private function setUIPosition(ui:DisplayObject3D, theta:Number):void {
-				var thetaDeg:Number = theta / Math.PI * 180;
+				var thetaRad:Number = theta * Math.PI / 180;
 				
-				ui.z = -2000 * Math.cos(theta);
-				ui.y = -2000 * Math.sin(theta);
+				ui.z = -2000 * Math.cos(thetaRad);
+				ui.y = -2000 * Math.sin(thetaRad);
 				
-				ui.rotationX = - (theta / Math.PI * 180);
+				ui.rotationX = -theta;
 			}
 			
 			// ____________________________________________ Rendering and Updating
@@ -168,13 +155,13 @@
 						(t as ITickable).tick();
 					}
 				}
-								
 				_renderer.renderScene(_scene, _camera, _viewport);
 			}
 			
 			public function toggleFullscreen():void {
 				if(stage.displayState == StageDisplayState.NORMAL) {
 					stage.displayState = StageDisplayState.FULL_SCREEN_INTERACTIVE;
+					this.showStatusBar = false;
 				} else {
 					stage.displayState = StageDisplayState.NORMAL;
 				}
@@ -183,99 +170,50 @@
 			// ____________________________________________ Interaction
 			
 			private function onSwipe(event:GestureEvent):void {
-				/*
+				
+				if(event.type == GestureEvent.SWIPE_START) {
+					this.removeEventListener(Event.ENTER_FRAME, onResetCamera);
+				}
+				
 				if(event.type == GestureEvent.SWIPE) {
-					for (var key:Object in _moduleAnchors) {
-						if(key != _focusedModule) {
-							var currentDelta:Number = Math.abs(_camera.rotationX + _moduleAnchors[_focusedModule] * 180 / Math.PI);
-							var camDelta:Number = Math.abs(_camera.rotationX + _moduleAnchors[key] * 180 / Math.PI);
-							trace(camDelta + " " + currentDelta);
-							if(camDelta < currentDelta) {
-								trace("new active is " + key);
-								_focusedModule = key as TouchUI;
-								break;
-							}
-						}
+					var c:Number = _camera.rotationX + (event.delta.y / 20);
+					
+					var eventDelta:Number = Math.abs(_eventUI.rotationX - c);
+					var mapDelta:Number = Math.abs(_mapUI.rotationX - c);
+					
+					trace(eventDelta + " " + mapDelta);
+					
+					if(mapDelta < eventDelta) {
+						_camTarget = -20;
+					} else {
+						_camTarget = 0;
 					}
 					
-					var c:Number = _camera.rotationX + (event.delta.y / 20);
-					_camera.rotationX = c;
-					_camera.z = -5000 * Math.cos(c * Math.PI / 180);
-					_camera.y = 5000 * Math.sin(c * Math.PI / 180);
+					this.setCamLocation(c);
 				}
 				
 				if(event.type == GestureEvent.SWIPE_END) {
 					this.addEventListener(Event.ENTER_FRAME, onResetCamera);
 				}
-				*/
 			}
 			
 			private function onResetCamera(event:Event):void {
-				var currentDelta:Number = Math.abs(_camera.rotationX - _moduleAnchors[_focusedModule] * 180 / Math.PI);
-				var c:Number;
-				
-				if(currentDelta < .1) {
-					c = _moduleAnchors[_focusedModule] * 180 / Math.PI;
+				if(Math.abs(_camTarget - _camera.rotationX) < .1) {
+					this.setCamLocation(_camTarget);
 					this.removeEventListener(Event.ENTER_FRAME, onResetCamera);
 				} else {
-					c = _camera.rotationX + currentDelta / 10;
+					var c:Number = _camera.rotationX + (_camTarget - _camera.rotationX) / 5;
+					this.setCamLocation(c);
 				}
-				
-				_camera.rotationX = c;
-				_camera.z = -5000 * Math.cos(c * Math.PI / 180);
-				_camera.y = 5000 * Math.sin(c * Math.PI / 180);
+			}
+			
+			private function setCamLocation(theta:Number):void {
+				_camera.rotationX = theta;
+				_camera.z = -5000 * Math.cos(theta * Math.PI / 180);
+				_camera.y = 5000 * Math.sin(theta * Math.PI / 180);
 			}
 			
 			// ____________________________________________ Demos
-			
-			/************************
-			 *     CREATOR DEMO     *
-			 ************************/
-			private var creatorUI:CreatorUI;
-			public function initCreatorDemo(event:Event = null):void {
-				creatorUI = new CreatorUI(_partyData.creators);
-				_scene.addChild(creatorUI);
-				
-			}
-			
-			/**********************
-			 *     EVENT DEMO     *
-			 **********************/
-			private var eventUI:EventUI;
-			public function initEventDemo(event:Event = null):void {
-				eventUI = new EventUI(_partyData);
-				_scene.addChild(eventUI);
-				eventUI.y = 100;
-				eventUI.z = 1300;
-				eventUI.rotationY = -200;
-				
-				
-				this.stage.addEventListener(MouseEvent.MOUSE_DOWN, onMouseDown);
-				this.stage.addEventListener(MouseEvent.MOUSE_UP, onMouseUp);
-			}
-			
-			private var lastMouseX:Number = 0;
-			
-			private function onMouseDown(event:Event = null):void {
-				this.addEventListener(MouseEvent.MOUSE_MOVE, onMouseMove);
-				lastMouseX = this.stage.mouseX;
-			}
-			
-			private function onMouseMove(event:Event = null):void {
-				var minDeg:Number = 100;
-				var maxDeg:Number = 140;
-				var mouseX:Number = this.stage.mouseX;
-				var delta:int = mouseX - lastMouseX;
-				lastMouseX = mouseX;
-				
-				eventUI.yaw(- delta / 30);
-				eventUI.rotationY = Math.max(40, Math.min(80, eventUI.rotationY));
-			}
-			
-			private function onMouseUp(event:Event = null):void {
-				this.removeEventListener(MouseEvent.MOUSE_MOVE, onMouseMove);
-			}
-			
 		]]>
 	</mx:Script>
 	
