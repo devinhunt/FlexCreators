@@ -1,7 +1,7 @@
 package com.creatorsproject.ui.textures
 {
 	import com.creatorsproject.data.EventFloor;
-	import com.creatorsproject.data.ScheduleEvent;
+	import com.creatorsproject.data.PartyEvent;
 	
 	import flash.display.MovieClip;
 	import flash.text.TextField;
@@ -36,7 +36,7 @@ package com.creatorsproject.ui.textures
 		
 		private function buildTexture():void {
 			
-			for each(var event:ScheduleEvent in _floor) {
+			for each(var event:PartyEvent in _floor) {
 				
 			}
 		}

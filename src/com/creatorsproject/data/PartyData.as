@@ -229,7 +229,7 @@ package com.creatorsproject.data
 			_rooms = [];
 			
 			for each(var rawRoom:Object in _rawRoomData) {
-				_rooms.push(new EventRoom(rawRoom.pk, rawRoom.fields.name, rawRoom.fields.floor));
+				_rooms.push(new EventRoom(rawRoom));
 			}
 			
 			// associate the rooms with their floors 
@@ -257,12 +257,12 @@ package com.creatorsproject.data
 			_events = [];
 			
 			for each(var rawEvent:Object in _rawEventData) {
-				_events.push(ScheduleEvent.createEventFromJson(rawEvent));
+				_events.push(PartyEvent.createEventFromJson(rawEvent));
 			}
 			
 			// associate our events with their room
 			for each(var room:EventRoom in _rooms) {
-				for each(var e:ScheduleEvent in _events) {
+				for each(var e:PartyEvent in _events) {
 					if(e.roomId == room.id) {
 						
 						room.addEvent(e);
@@ -288,10 +288,10 @@ package com.creatorsproject.data
 		
 			// and set out constants;
 			if(_events.length > 0) {
-				var sd:Date = new Date((_events[0] as ScheduleEvent).startTime.getTime());
-				var ed:Date = new Date((_events[0] as ScheduleEvent).endTime.getTime());
+				var sd:Date = new Date((_events[0] as PartyEvent).startTime.getTime());
+				var ed:Date = new Date((_events[0] as PartyEvent).endTime.getTime());
 				
-				for each(var ev:ScheduleEvent in _events) {
+				for each(var ev:PartyEvent in _events) {
 					if(ev.startTime.getTime() < sd.getTime()) {
 						sd.setTime(ev.startTime.getTime());
 					}
@@ -390,17 +390,27 @@ package com.creatorsproject.data
 		}
 		
 		public function get nextEvents():Array {
-			var currentDate:Date = new Date(2010, 6, 24, 1, 57, 28)
+			var currentDate:Date = new Date(2010, 6, 26, 18, 12, 00)
 			var events:Array = []
 			var threshold:Number = .5;			// in hours
 			
-			for each(var event:ScheduleEvent in _events) {
-				if(Math.abs((currentDate.getTime() - event.startTime.getTime()) / 1000 / 60 / 60) < .5) {
+			for each(var event:PartyEvent in _events) {
+				if(Math.abs((currentDate.getTime() - event.startTime.getTime()) / 1000 / 60 / 60) < .5
+				   || (currentDate.getTime() > event.startTime.getTime() && currentDate.getTime() < event.endTime.getTime())) {
 					events.push(event);
 				}
 			}
 			
 			return events;
+		}
+		
+		public function getRoomFromId(roomId:String):EventRoom {
+			for each(var room:EventRoom in _rooms) {
+				if(room.id == roomId) {
+					return room;
+				}
+			}
+			return null;
 		}
 		
 		/**

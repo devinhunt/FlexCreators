@@ -38,7 +38,7 @@
 		//		}
 		
 		
-			import com.creatorsproject.data.ScheduleEvent;
+			import com.creatorsproject.data.PartyEvent;
 			import com.creatorsproject.data.DataConstants;
 			import com.creatorsproject.data.PartyStatus;
 			import mx.events.CollectionEventKind;
@@ -119,7 +119,7 @@
 					return;
 				}
 				var currentDate:Date = new Date(2010, 6, 24, 1, 57, 28);
-				var event:ScheduleEvent = _nextEvents[0];
+				var event:PartyEvent = _nextEvents[0];
 				
 				var secs:int = ((currentDate.getTime() - event.startTime.getTime()) / 1000) % 60;
 				var mins:int = ((currentDate.getTime() - event.startTime.getTime()) / 1000 / 60) % 60;

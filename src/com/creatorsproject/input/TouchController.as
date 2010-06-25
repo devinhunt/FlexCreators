@@ -135,9 +135,13 @@ package com.creatorsproject.input
 			
 			//_stage.removeEventListener(MouseEvent.MOUSE_MOVE, onMouseMove);
 			_stage.removeEventListener(Event.ENTER_FRAME, onMouseMove);
-			_state = "noSwipe";
+			_stage.addEventListener(Event.ENTER_FRAME, oneMore);
 			_mattePressed = false;
-			
+		}
+		
+		private function oneMore(event:Event):void {
+			_stage.removeEventListener(Event.ENTER_FRAME, oneMore);
+			_state = "noSwipe";
 			this.dispatchSwipeEvent(GestureEvent.SWIPE_END);
 		}
 		

@@ -19,6 +19,9 @@ package com.creatorsproject.ui.transitions
 		public var startScale:Number;
 		public var endScale:Number;
 		
+		public var startRotationY:Number;
+		public var endRotationY:Number;
+		
 		public var target:DisplayObject3D;
 		
 		public function AnimationProfile(target:DisplayObject3D, endPosition:Number3D = null)
@@ -27,10 +30,12 @@ package com.creatorsproject.ui.transitions
 			this.startPosition = target.position.clone();
 			this.startAlpha = target.alpha;
 			this.startScale = target.scale;
+			this.startRotationY = target.rotationY;
 			
 			this.endPosition = endPosition ? endPosition : target.position.clone();
 			this.endAlpha = target.alpha;
 			this.endScale = target.scale;
+			this.endRotationY = target.rotationY;
 		}
 
 	}

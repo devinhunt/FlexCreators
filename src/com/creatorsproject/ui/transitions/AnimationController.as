@@ -75,6 +75,7 @@ package com.creatorsproject.ui.transitions
 				profile.target.z = profile.startPosition.z + (profile.endPosition.z - profile.startPosition.z) * delta;
 				profile.target.alpha = profile.startAlpha + (profile.endAlpha - profile.startAlpha) * delta;
 				profile.target.scale = profile.startScale + (profile.endScale - profile.startScale) * delta;
+				profile.target.rotationY = profile.startRotationY + (profile.endRotationY - profile.startRotationY) * delta;
 			}
 			
 			if(elapsed == _duration) {

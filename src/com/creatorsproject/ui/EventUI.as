@@ -4,7 +4,7 @@ package com.creatorsproject.ui
 	import com.creatorsproject.data.EventFloor;
 	import com.creatorsproject.data.EventRoom;
 	import com.creatorsproject.data.PartyData;
-	import com.creatorsproject.data.ScheduleEvent;
+	import com.creatorsproject.data.PartyEvent;
 	import com.creatorsproject.geom.TileBand;
 	import com.creatorsproject.input.TouchController;
 	import com.creatorsproject.input.events.GestureEvent;
@@ -71,7 +71,7 @@ package com.creatorsproject.ui
 		private var _targetFloorBand:TileBand;
 		
 		/** The data that the click on the room band represents */
-		private var _targetEventData:ScheduleEvent;
+		private var _targetEventData:PartyEvent;
 		
 		/** The display object for the event details. This will go on the Front UI plane */
 		private var _detailChip:EventDetailChip;
@@ -214,7 +214,7 @@ package com.creatorsproject.ui
 				var band:TileBand = event.target as TileBand;
 				var data:EventRoom = band.data as EventRoom;
 				
-				for each(var e:ScheduleEvent in data.events) {
+				for each(var e:PartyEvent in data.events) {
 					var startHr:Number = (e.startTime.getTime() - _schedule.startDate.getTime()) / 1000 / 60 / 60;
 					var endHr:Number = (e.endTime.getTime() - _schedule.startDate.getTime()) / 1000 / 60 / 60;
 					
@@ -361,7 +361,7 @@ package com.creatorsproject.ui
 			var g:Graphics = parent.graphics;
 			var spacing:Number = 4;
 			for(var e:int = 0; e < room.events.length; e ++) {
-				var event:ScheduleEvent = room.events[e];
+				var event:PartyEvent = room.events[e];
 					var startHr:Number = (event.startTime.getTime() - _schedule.startDate.getTime()) / 1000 / 60 / 60;
 					var endHr:Number = (event.endTime.getTime() - _schedule.startDate.getTime()) / 1000 / 60 / 60;
 					

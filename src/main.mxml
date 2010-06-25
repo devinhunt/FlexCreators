@@ -4,6 +4,7 @@
 
 	<mx:Script>
 		<![CDATA[
+			import com.creatorsproject.ui.MapUI;
 			import com.creatorsproject.data.DataConstants;
 			import com.creatorsproject.ui.TouchUI;
 			import org.papervision3d.core.animation.channel.Channel3D;
@@ -24,7 +25,7 @@
 			import com.creatorsproject.ui.EventUI;
 			import com.creatorsproject.data.PartyData;
 			import com.creatorsproject.data.EventRoom;
-			import com.creatorsproject.data.ScheduleEvent;
+			import com.creatorsproject.data.PartyEvent;
 			import com.creatorsproject.ui.ITickable;
 			import org.papervision3d.materials.utils.MaterialsList;
 			import org.papervision3d.materials.ColorMaterial;
@@ -57,6 +58,7 @@
 			public static var MAP_NODE:String = "mapNode";
 			private var _eventUI:EventUI;
 			private var _creatorUI:CreatorUI;
+			private var _mapUI:MapUI;
 			
 			// ____________________________________________ Application Setup
 			
@@ -111,24 +113,31 @@
 			}
 			
 			public function initInterface(event:Event = null):void {
-				_eventUI = new EventUI(_partyData);
-				_scene.addChild(_eventUI);
 				
-				_creatorUI = new CreatorUI(_partyData.creators);
-				_scene.addChild(_creatorUI);
+				_mapUI = new MapUI(_partyData);
+				_scene.addChild(_mapUI);
+				setUIPosition(_mapUI, 0);
+				
+				//_eventUI = new EventUI(_partyData);
+				//_scene.addChild(_eventUI);
+				
+				//_creatorUI = new CreatorUI(_partyData.creators);
+				//_scene.addChild(_creatorUI);
 				
 				// position the UI modules
-				_moduleAnchors = new Dictionary();
-				_moduleAnchors[_eventUI] = 0;
-				_moduleAnchors[_creatorUI] = Math.PI / 5;
-				setUIPosition(_eventUI, _moduleAnchors[_eventUI]);
-				setUIPosition(_creatorUI, _moduleAnchors[_creatorUI]);
+				
+				//_moduleAnchors = new Dictionary();
+				//_moduleAnchors[_eventUI] = 0;
+				//_moduleAnchors[_creatorUI] = Math.PI / 5;
+				//setUIPosition(_eventUI, _moduleAnchors[_eventUI]);
+				//setUIPosition(_creatorUI, _moduleAnchors[_creatorUI]);
+				
 				
 				// finally, get the camera into place
 				_camera.z = -5000;
 				
 				//dump();
-				_focusedModule = _eventUI;
+				//_focusedModule = _eventUI;
 			}
 			
 			private function dump():void {

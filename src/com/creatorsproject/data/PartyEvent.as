@@ -2,7 +2,7 @@ package com.creatorsproject.data
 {
 	import com.adobe.protocols.dict.Database;
 	
-	public class ScheduleEvent
+	public class PartyEvent
 	{
 		
 		/** The PK id of the event on the live server */
@@ -26,7 +26,7 @@ package com.creatorsproject.data
 		/** ID of the creator for this event */
 		public var creatorId:String;
 		
-		public function ScheduleEvent(id:String, name:String, roomId:String, creatorId:String, startTime:Date, endTime:Date)
+		public function PartyEvent(id:String, name:String, roomId:String, creatorId:String, startTime:Date, endTime:Date)
 		{
 			this.id = id;
 			this.name = name;
@@ -51,10 +51,10 @@ package com.creatorsproject.data
 		 * Static event to add object creation 
 		 * @param rawEvent The raw event object model
 		 */				
-		public static function createEventFromJson(rawEvent:Object):ScheduleEvent {
+		public static function createEventFromJson(rawEvent:Object):PartyEvent {
 			
 			
-			return new ScheduleEvent(rawEvent.pk,
+			return new PartyEvent(rawEvent.pk,
 										rawEvent.fields.name, 
 										rawEvent.fields.room, 
 										rawEvent.fields.creator,

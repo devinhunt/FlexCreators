@@ -3,10 +3,10 @@
 	
 	<mx:Script>
 		<![CDATA[
-			import com.creatorsproject.data.ScheduleEvent;
+			import com.creatorsproject.data.PartyEvent;
 			
 			[Bindable]
-			public var eventData:ScheduleEvent;
+			public var eventData:PartyEvent;
 		]]>
 	</mx:Script>
 	

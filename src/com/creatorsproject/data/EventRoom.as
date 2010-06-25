@@ -11,18 +11,23 @@ package com.creatorsproject.data
 		public var floorId:String;
 		public var name:String;
 		
+		public var x:int;
+		public var y:int;
+		
 		public var events:Array;
 		
-		public function EventRoom(id:String, name:String, floor:String)
+		public function EventRoom(raw:Object)
 		{
-			this.id = id;
-			this.name = name;
-			this.floorId = floor;
+			this.id = raw.pk;
+			this.name = raw.fields.name;
+			this.floorId = raw.fields.floor;
+			this.x = parseInt(raw.fields.x, 10);
+			this.y = parseInt(raw.fields.y, 10);
 			
 			events = [];
 		}
 		
-		public function addEvent(event:ScheduleEvent):void {
+		public function addEvent(event:PartyEvent):void {
 			event.roomName = this.name;
 			events.push(event);
 		}
