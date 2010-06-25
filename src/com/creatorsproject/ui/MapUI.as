@@ -22,7 +22,7 @@ package com.creatorsproject.ui
 	{
 		private var angle:Number = 16;
 		
-		private var _state:String;
+		
 		
 		private var _partyData:PartyData;
 		private var _root:DisplayObject3D;
@@ -140,15 +140,21 @@ package com.creatorsproject.ui
 		 * Change the state of the UI 
 		 * @param value The new state 
 		 */		
-		public function set state(value:String):void {
+		override public function set state(value:String):void {
 			var oldState:String = _state;
+			super.state = value;
 			_state = value;
 			
 			trace("Map UI :: Changing to state " + value);
 			
 			switch(_state) {
 				case "overview":
-					if(oldState == "focus") {
+				
+					if(oldState == "disable") {
+						this.addChild(_root);
+					}
+				
+					if(oldState == "focus" || oldState == "disable") {
 						hideMarkers();
 						resetMaps();
 					}
@@ -159,6 +165,14 @@ package com.creatorsproject.ui
 					break;
 			}
 		}
+		
+		override protected function disableUI():void {
+			super.disableUI();
+			
+			this.hideMarkers();
+			this.removeChild(_root);
+		}
+		
 		
 		// ________________________________________________ User Interaction
 		
@@ -227,7 +241,7 @@ package com.creatorsproject.ui
 				var room:EventRoom = _partyData.getRoomFromId(ev.roomId);
 				if(room && room.floorId == floor.id) {
 					trace(room.name);
-					var marker:MapMarker = this.getMarker(ev.name);
+					var marker:MapMarker = this.getMarker(ev);
 					marker.x = room.x / 1.22 + pushx;
 					marker.y = room.y / 1.22 + pushy;
 					main.instance.frontUI.addChild(marker)
@@ -253,11 +267,11 @@ package com.creatorsproject.ui
 			}
 		}
 		
-		private function getMarker(label:String):MapMarker {
-			if(! _markerCache[label]) {
-				_markerCache[label] = new MapMarker(label, "");
+		private function getMarker(event:PartyEvent):MapMarker {
+			if(! _markerCache[event.name]) {
+				_markerCache[event.name] = new MapMarker(event);
 			}
-			return _markerCache[label] as MapMarker;
+			return _markerCache[event.name] as MapMarker;
 		}
 	}
 }

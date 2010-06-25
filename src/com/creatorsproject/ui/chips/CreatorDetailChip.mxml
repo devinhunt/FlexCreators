@@ -1,26 +1,45 @@
 <?xml version="1.0" encoding="utf-8"?>
-<mx:VBox xmlns:mx="http://www.adobe.com/2006/mxml" width="800" height="600" creationComplete="initVideo()" enterFrame="onEnterFrame(event)">
+<mx:VBox xmlns:mx="http://www.adobe.com/2006/mxml" width="940" height="640" creationComplete="initVideo()" enterFrame="onEnterFrame(event)"
+	horizontalCenter="0" verticalCenter="0" styleName="chip">
 	
 	<mx:Script>
 		<![CDATA[
+			import com.creatorsproject.data.PartyVideo;
+			import com.creatorsproject.data.DataConstants;
+			import com.creatorsproject.data.PartyCreatorChip;
 			import com.creatorsproject.data.Creator;
 			import mx.controls.videoClasses.VideoPlayer;
 			
-			[Bindable]
-			public var creatorData:Creator;
-			
-			private var _video:Video;
-			
 			public var onMetaData:Object = onMetaDataFunc;
+			public var onXMPData:Object = onXMPDataFunc;
+
+			private var _creatorData:Creator;
+			private var _partyVideo:PartyVideo;
+			private var _video:Video;
 			private var ns:NetStream;
+			
+			public function set creatorData(value:Creator):void {
+				_creatorData = value;
+				
+				this.artistName.htmlText = _creatorData.name;
+				this.description.htmlText = _creatorData.synopsis;
+			}
+			
+			public function set partyVideo(value:PartyVideo):void {
+				_partyVideo = value;
+			}
 			
 			private function initVideo():void {
 				_video = new Video();
 				this.videoWrapper.addChild(_video);
-				
 			}
 			
-			public function loadVideo(videoName:String = "Takeshi-melterclip1_Ads.flv"):void {
+			public function loadVideo():void {
+				
+				if(!_video) {
+					this.initVideo();
+				}
+				
 				var nc:NetConnection = new NetConnection();
 				nc.connect(null);
 				
@@ -29,8 +48,7 @@
 				
 				_video.attachNetStream(ns);
 				
-				var fileUrl:String = File.applicationDirectory.url + "media/videos/" + videoName;
-				//var fileUrl:String = "/Users/devin/Documents/workspace/flex-creators/media/videos/Takeshi-melterclip1_Ads.flv" 
+				var fileUrl:String = DataConstants.videoDir.url + File.separator + _partyVideo.fileName;
 				trace(fileUrl);
 				var f:File = new File(fileUrl);
 				
@@ -41,23 +59,50 @@
 				ns.play(f.url);
 			}
 			
+			public function haltVideo():void {
+				if(ns) {
+					ns.pause();
+				}
+			}
+			
 			private function onVideoIOError(event:IOErrorEvent):void {
-				trace(event.text);
+				
 			}
 			
 			private function onStatus(event:StatusEvent):void {
-				trace(event.currentTarget);
+				
 			}
 			
 			private function onVideoStatus(event:NetStatusEvent):void {
-				trace(event);
-				trace(event.info.code);
+				
 			}
 			
 			private function onMetaDataFunc(metadata:Object):void {
-				trace(metadata.duration);
-				_video.width = metadata.width;
-				_video.height = metadata.height;
+				var h:Number = metadata.width;
+				var w:Number = metadata.height;
+				var ratio:Number = w / h;
+				
+				if(w > 900) {
+					trace("FIXING WIDTH");
+					var fixRatio:Number = 900 / w;
+					_video.width = 900;
+					_video.height = h * fixRatio;
+				} else if(h > 450) {
+					trace("FIXING HEIGHT");
+					var fixRatio:Number = 450 / h;
+					_video.width = w * fixRatio;
+					_video.height = 450;
+				} else {
+					_video.width = w;
+					_video.height = h;
+				}
+				
+				_video.x = 950 / 2 - w / 2;
+				_video.y = 450 / 2 - h / 2;
+			}
+			
+			private function onXMPDataFunc(data:Object):void {
+				trace(data);
 			}
 			
 			private function onEnterFrame(event:Event):void {
@@ -72,18 +117,15 @@
 		]]>
 	</mx:Script>
 	
-	<mx:HBox width="100%">
-		<mx:VBox width="33%">
-			<mx:Label id="artistName" text="Takeshi Murata" />
-			<mx:Label id="artistTheme" text="Artist, Musician" />
-			<mx:Button label="Related Event" />
-		</mx:VBox>
+	<mx:HBox width="900" height="130" horizontalGap="20">
+		<mx:Label id="artistName" styleName="bigTitle" width="440"/>
 		
-		<mx:Text width="66%" text="Here is some related text" />
+		<mx:Canvas id="wrapper" height="130" width="440">
+			<mx:Text id="description" styleName="detailText" width="420"/>
+		</mx:Canvas>
 	</mx:HBox>
 	
-	<mx:UIComponent id="videoWrapper">
+	<mx:UIComponent id="videoWrapper" width="900" height="450">
 		
 	</mx:UIComponent>
-	
 </mx:VBox>

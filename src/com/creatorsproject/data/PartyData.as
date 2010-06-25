@@ -256,16 +256,25 @@ package com.creatorsproject.data
 			_rawEventData = JSON.decode(rawData)
 			_events = [];
 			
-			for each(var rawEvent:Object in _rawEventData) {
-				_events.push(PartyEvent.createEventFromJson(rawEvent));
+			for each(var rawEvent:Object in _rawEventData.events) {
+				_events.push(new PartyEvent(rawEvent));
+			}
+			
+			// associate our events chips with their events
+			for each(var chip:Object in _rawEventData.chips) {
+				for each(var e:PartyEvent in _events) {
+					if(e.id == chip.fields.event) {
+						e.chipUrl = chip.fields.image;
+					}
+				}
 			}
 			
 			// associate our events with their room
 			for each(var room:EventRoom in _rooms) {
-				for each(var e:PartyEvent in _events) {
+				for each(e in _events) {
 					if(e.roomId == room.id) {
-						
 						room.addEvent(e);
+						e.floorName = this.getFloorFromRoom(room).name;
 					}
 				}
 			}
@@ -404,6 +413,15 @@ package com.creatorsproject.data
 			return events;
 		}
 		
+		public function getFloorFromRoom(room:EventRoom):EventFloor {
+			for each(var floor:EventFloor in _floors) {
+				if(floor.rooms.indexOf(room) >= 0) {
+					return floor;
+				}
+			}
+			return null;
+		}
+		
 		public function getRoomFromId(roomId:String):EventRoom {
 			for each(var room:EventRoom in _rooms) {
 				if(room.id == roomId) {
@@ -411,6 +429,27 @@ package com.creatorsproject.data
 				}
 			}
 			return null;
+		}
+		
+		public function getChipsForCreator(creator:Creator):Array {
+			var rez:Array = [];
+			
+			for each(var chip:PartyCreatorChip in _chips) {
+				if(creator.id == chip.creatorId) {
+					rez.push(chip);
+				}
+			}
+			
+			return rez;
+		}
+		
+		public function getVideoFromId(id:String):PartyVideo {
+			for each(var video:PartyVideo in _videos) {
+				if(video.id == id) {
+					return video;
+				}
+			}
+			return null;	
 		}
 		
 		/**

@@ -8,7 +8,8 @@ package com.creatorsproject.data
 		/** The PK id of the event on the live server */
 		public var id:String;
 		
-		/** The name of the event */		
+		/** The name of the event */
+		[Bindable]		
 		public var name:String;
 		
 		/** The begin time of the event in local time zone */		
@@ -23,17 +24,25 @@ package com.creatorsproject.data
 		/** The name of the room this is taking place in. This is usually set when the event is added to a room object */
 		public var roomName:String = "Default room";
 		
+		/** The new of the floor */
+		public var floorName:String  = "Default floor";
+		
+		public var description:String;
+		
 		/** ID of the creator for this event */
 		public var creatorId:String;
 		
-		public function PartyEvent(id:String, name:String, roomId:String, creatorId:String, startTime:Date, endTime:Date)
+		public var chipUrl:String;
+		
+		public function PartyEvent(raw:Object)
 		{
-			this.id = id;
-			this.name = name;
-			this.roomId = roomId;
-			this.creatorId = creatorId;
-			this.startTime = startTime;
-			this.endTime = endTime;
+			this.id = raw.pk;
+			this.name = raw.fields.name;
+			this.roomId = raw.fields.room;
+			this.creatorId = raw.fields.creator;
+			this.startTime = PartyData.dateFromJSON(raw.fields.start);
+			this.endTime = PartyData.dateFromJSON(raw.fields.end);
+			this.description = raw.fields.description;
 		}
 		
 		//_________________________________________________ Getter and Setters
@@ -44,22 +53,17 @@ package com.creatorsproject.data
 		}
 		
 		public function get dateString():String {
-			return startTime.getUTCHours() + ":" + startTime.getUTCMinutes() + " to " + endTime.getUTCHours() + ":" + endTime.getUTCMinutes(); 
-		}
-		
-		/**
-		 * Static event to add object creation 
-		 * @param rawEvent The raw event object model
-		 */				
-		public static function createEventFromJson(rawEvent:Object):PartyEvent {
+			var sHours:String = startTime.getHours() + "";
+			var sMinutes:String = startTime.getMinutes() + "";
+			var eHours:String = endTime.getHours() + "";
+			var eMinutes:String = endTime.getMinutes() + "";
 			
+			sHours = sHours.length < 2 ? "0" + sHours : sHours;
+			sMinutes = sMinutes.length < 2 ? "0" + sMinutes : sMinutes;
+			eHours = eHours.length < 2 ? "0" + eHours : eHours;
+			eMinutes = eMinutes.length < 2 ? "0" + eMinutes : eMinutes;
 			
-			return new PartyEvent(rawEvent.pk,
-										rawEvent.fields.name, 
-										rawEvent.fields.room, 
-										rawEvent.fields.creator,
-										PartyData.dateFromJSON(rawEvent.fields.start),
-										PartyData.dateFromJSON(rawEvent.fields.end));
+			return sHours + ":" + sMinutes + " to " + eHours + ":" + eMinutes; 
 		}
 	}
 }

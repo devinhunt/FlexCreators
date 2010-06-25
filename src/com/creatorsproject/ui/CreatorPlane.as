@@ -20,7 +20,9 @@ package com.creatorsproject.ui
 		
 		public function CreatorPlane(creator:Creator)
 		{
-			super(new ColorMaterial, 401, 307, 1, 1);
+			var c:ColorMaterial = new ColorMaterial();
+			c.interactive = true;
+			super(c, 401, 307, 1, 1);
 			this.creator = creator;
 			this.loadImage();
 		}

@@ -14,7 +14,7 @@
 				this.graphics.drawRect(0, 0, this.width, this.height);
 			}
 		
-			[Bindable]
+			
 			public function get authorString():String {
 				return "-posted by " + this.data.user;
 			}

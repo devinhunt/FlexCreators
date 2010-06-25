@@ -3,6 +3,15 @@
 	horizontalScrollPolicy="off" verticalScrollPolicy="off">
 
 	<mx:Style>
+	
+		/*
+		@font-face {
+			src: url("../media/fonts/NeoSansIntel.ttf");
+			font-family: NeoSansIntel;
+			font-style: normal;
+			font-weight: normal;
+		}
+		*/
 		
 		.headerText {
 			font-family: NeoSansIntel;
@@ -30,13 +39,6 @@
 
 	
 		<![CDATA[
-		//				@font-face {
-		//			src: url("../media/fonts/NeoSansIntel.ttf");
-		//			font-family: NeoSansIntel;
-		//			font-style: normal;
-		//			font-weight: normal;
-		//		}
-		
 		
 			import com.creatorsproject.data.PartyEvent;
 			import com.creatorsproject.data.DataConstants;

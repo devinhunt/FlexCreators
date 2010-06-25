@@ -1,19 +1,30 @@
 package com.creatorsproject.ui
 {
-	import flash.display.MovieClip;
+	import com.creatorsproject.data.DataConstants;
+	import com.creatorsproject.data.PartyEvent;
+	
+	import flash.display.Loader;
+	import flash.events.Event;
+	import flash.net.URLRequest;
+	
+	import mx.core.UIComponent;
 
-	public class MapMarker extends MovieClip
+	public class MapMarker extends UIComponent
 	{
-		public function MapMarker(title:String, chipUrl:String, w:Number = 50, h:Number = 50)
+		public function MapMarker(event:PartyEvent, w:Number = 50, h:Number = 50)
 		{
 			super();
-			
-			this.name = title;
-			
-			this.graphics.beginFill(0x000000);
-			this.graphics.drawRect(w / 2, h / 2, w, h);
-			this.graphics.endFill();
+
+			var loader:Loader = new Loader();
+			var req:URLRequest = new URLRequest(DataConstants.mediaUrl + event.chipUrl);
+			loader.load(req);
+			loader.contentLoaderInfo.addEventListener(Event.COMPLETE, onLoadComplete);
+			loader.contentLoaderInfo.addEventListener(Event.COMPLETE, onLoadComplete);
+			this.addChild(loader);
 		}
 		
+		private function onLoadComplete(event:Event):void {
+			
+		}
 	}
 }

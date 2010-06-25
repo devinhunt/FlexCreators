@@ -2,8 +2,59 @@
 <mx:WindowedApplication xmlns:mx="http://www.adobe.com/2006/mxml" layout="absolute" title="Creators Project" backgroundColor="0xffffff" width="1360" height="768"
 	xmlns:textures="com.creatorsproject.ui.textures.*" xmlns:chips="com.creatorsproject.ui.chips.*">
 
+	<mx:Style>
+		
+		.chip {
+			horizontal-center: 0;
+			vertical-center: 0;
+			background-color: #000000;
+			paddingTop: 40;
+			paddingBottom: 40;
+			paddingLeft: 20;
+			paddingRight: 20;
+		}
+		
+		.bigTitle {
+			font-family: "Neo Sans Intel";
+			font-size: 48;
+			color: #0079bc;
+		}
+		
+		.mediumTitle {
+			font-family: "Neo Sans Intel";
+			color: #0079bc;
+			font-size: 32px;
+		}
+		
+		.detailText {
+			font-family: "Neo Sans Intel";
+			color: #ffffff;
+			font-size: 14;
+		}
+		
+		.touchButton {
+			font-family: "Neo Sans Intel";
+			paddingLeft: 20;
+			paddingRight: 20;
+			paddingTop: 10;
+			paddingBottom: 10;
+			letterSpacing: 3;
+			highlightAlphas: 0, 0;
+			fillAlphas: 1, 1, 1, 1;
+			fillColors: #222222, #222222, #222222, #222222;
+			color: #ffffff;
+			textRollOverColor: #0b333c;
+			textSelectedColor: #000033;
+			borderColor: #aab3b3;
+			fontSize: 14;
+			fontWeight: normal;
+		}
+		
+	</mx:Style>
+
 	<mx:Script>
 		<![CDATA[
+			import com.creatorsproject.ui.MapMarker;
 			import com.creatorsproject.ui.MapUI;
 			import com.creatorsproject.data.DataConstants;
 			import com.creatorsproject.ui.TouchUI;
@@ -28,6 +79,15 @@
 			import org.papervision3d.scenes.Scene3D;
 			import org.papervision3d.render.BasicRenderEngine;
 			import org.papervision3d.view.Viewport3D;
+			
+			// Assets!
+			[Embed(source="../media/img/creators_project_inverted_small.png")]
+			[Bindable]
+			public static var creatorLogo:Class;
+			
+			[Embed(source="../media/img/intel_vice_logo_lockup_small.png")]
+			[Bindable]
+			public static var viceLogo:Class;
 			
 			// Singletoning!
 			public static var instance:main;
@@ -61,18 +121,14 @@
 			// ____________________________________________ Application Setup
 			
 			public function init(isLocal:Boolean = true):void {
+				DataConstants.videoDir = new File();
+				DataConstants.videoDir.addEventListener(Event.SELECT, onVideoDirSelect);
+				DataConstants.videoDir.browseForDirectory("Where are the video files, blood");
+				
 				DataConstants.isLocal = isLocal
 				initWindow.visible = false;
 				initSever();
-				
 				//animationTest();
-			}
-			
-			private function animationTest():void {
-				this.init3D();
-				
-				var cube:Cube = new Cube(new MaterialsList({all: new ColorMaterial()}), 100, 100, 100);
-				_scene.addChild(cube);
 			}
 			
 			public function initSever():void {
@@ -91,6 +147,10 @@
 				this.initTouch();
 				this.init3D();
 				this.initInterface();
+			}
+			
+			public function onVideoDirSelect(event:Event):void {
+				trace(DataConstants.videoDir.url);
 			}
 			
 			public function init3D():void {
@@ -166,6 +226,7 @@
 				if(stage.displayState == StageDisplayState.NORMAL) {
 					stage.displayState = StageDisplayState.FULL_SCREEN_INTERACTIVE;
 					this.showStatusBar = false;
+					this.fullScreenButton.visible = false;
 				} else {
 					stage.displayState = StageDisplayState.NORMAL;
 				}
@@ -194,11 +255,38 @@
 						_camTarget = 20;
 					}
 					
+					if(eventDelta < 10 && _eventUI.state == "disable") {
+						_eventUI.state = "floors";
+					}
+					
+					if(creatorDelta < 10 && _creatorUI.state == "disable") {
+						_creatorUI.state = "creators";
+					}
+					
+					if(mapDelta < 10 && _mapUI.state == "disable") {
+						_mapUI.state = "overview";
+					}
+					
 					this.setCamLocation(c);
 				}
 				
 				if(event.type == GestureEvent.SWIPE_END) {
 					this.addEventListener(Event.ENTER_FRAME, onResetCamera);
+					
+					switch(_camTarget) {
+						case -20:
+							_creatorUI.state = "disable";
+							_eventUI.state = "disable";
+							break;
+						case 0:
+							_eventUI.state = "disable";
+							_mapUI.state = "disable";
+							break;
+						case 20:
+							_creatorUI.state = "disable";
+							_mapUI.state = "disable";
+							break;
+					}
 				}
 			}
 			
@@ -206,6 +294,7 @@
 				if(Math.abs(_camTarget - _camera.rotationX) < .1) {
 					this.setCamLocation(_camTarget);
 					this.removeEventListener(Event.ENTER_FRAME, onResetCamera);
+					
 				} else {
 					var c:Number = _camera.rotationX + (_camTarget - _camera.rotationX) / 5;
 					this.setCamLocation(c);
@@ -224,9 +313,18 @@
 	
 	<mx:Canvas id="clickMatte" backgroundColor="0xffffff" width="100%" height="100%" />
 	<mx:UIComponent id="backUI" width="100%" height="100%" opaqueBackground="0xffffff"/>
-	<mx:UIComponent id="frontUI" width="100%" height="100%" />
+	<mx:Canvas id="frontUI" width="100%" height="100%"/>
 	
-	<mx:Button label="Toggle your screen" right="10" bottom = "10" click="this.toggleFullscreen()"/>
+	<mx:HBox id="barTop" height="40" width="100%" x="0" y="0" backgroundColor="0x000000">
+
+	</mx:HBox>	
+	<mx:Canvas id="barBottom" height="60" width="100%" bottom="0" x="0" backgroundColor="0x000000"
+		 horizontalScrollPolicy="off" verticalScrollPolicy="off">
+		<mx:Image source="{creatorLogo}" top="10" left="10"/>
+		<mx:Image source="{viceLogo}" top="10" right="10"/>
+	</mx:Canvas>
+	
+	<mx:Button id="fullScreenButton" label="Toggle your screen" right="10" bottom = "10" click="this.toggleFullscreen()"/>
 	
 	<mx:TitleWindow horizontalCenter="0" verticalCenter="0" title="Pick your server poison" id="initWindow">
 		<mx:Button label="Run Screen from Localhost" click="init()"/>

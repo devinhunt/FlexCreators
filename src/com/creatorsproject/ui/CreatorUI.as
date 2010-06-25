@@ -2,7 +2,9 @@ package com.creatorsproject.ui
 {
 	import com.creatorsproject.data.Creator;
 	import com.creatorsproject.data.PartyData;
+	import com.creatorsproject.data.PartyVideo;
 	import com.creatorsproject.input.TouchController;
+	import com.creatorsproject.input.events.GestureEvent;
 	import com.creatorsproject.ui.chips.CreatorDetailChip;
 	
 	import org.papervision3d.events.InteractiveScene3DEvent;
@@ -22,7 +24,6 @@ package com.creatorsproject.ui
 		private var _detailChip:CreatorDetailChip;
 		
 		private var _partyData:PartyData;
-		private var _state:String;
 		
 		private var _root:DisplayObject3D;
 		private var _targetChip:CreatorPlane;
@@ -61,7 +62,7 @@ package com.creatorsproject.ui
 		 * Change the state of the UI 
 		 * @param value The new state 
 		 */		
-		public function set state(value:String):void {
+		override public function set state(value:String):void {
 			var oldState:String = _state;
 			_state = value;
 			
@@ -69,15 +70,39 @@ package com.creatorsproject.ui
 			
 			switch(_state) {
 				case "creators":
+					
+					if(oldState == "disable") {
+						this.addChild(_root);
+					}
+				
 					if(main.instance.frontUI.contains(_detailChip)) {
+						_detailChip.haltVideo();
 						main.instance.frontUI.removeChild(_detailChip);
 					}
 					break;
 					
 				case "creatorDetail":
-					main.instance.frontUI.addChild(_detailChip);
+					try{
+						main.instance.frontUI.addChild(_detailChip);
+						var chips:Array = _partyData.getChipsForCreator(_targetChip.creator);
+					
+						var video:PartyVideo = _partyData.getVideoFromId(chips[0].videoId);
+						
+						_detailChip.creatorData = _targetChip.creator;
+						_detailChip.partyVideo = video;
+						
+						_detailChip.loadVideo();
+					} catch(e:Error) {
+						trace("VIDEO FAILED TO LOAD");
+					}
 					break;
 			}
+		}
+		
+		override protected function disableUI():void {
+			super.disableUI();
+			
+			this.removeChild(_root);
 		}
 		
 		// ________________________________________________ Interaction
@@ -86,6 +111,12 @@ package com.creatorsproject.ui
 			if(TouchController.me.state == "touching" && _state == "creators") {
 				_targetChip = event.target as CreatorPlane;
 				this.state = "creatorDetail";
+			}
+		}
+		
+		override protected function onMatteClick(event:GestureEvent):void {
+			if(_state == "creatorDetail") {
+				this.state = "creators";
 			}
 		}
 		

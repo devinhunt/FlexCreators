@@ -45,6 +45,9 @@ package com.creatorsproject.ui
 		
 		/** The curve that schedule tiles follow */
 		private var _curve:Array;
+		private var _rootThetaOffset:Number = 90;
+		private var _minTheta:Number = 0;
+		private var _maxTheta:Number = 0;
 		
 		/** The 3D root schedule of floor bands */
 		private var _floorBands:DisplayObject3D;
@@ -63,9 +66,6 @@ package com.creatorsproject.ui
 		
 		/** cache of all the room schedule bands */
 		private var _tilebandCache:Object;
-		
-		/** current state of the schedule ui */
-		private var _state:String;
 		
 		/** The floor we're expanding on */
 		private var _targetFloorBand:TileBand;
@@ -93,7 +93,7 @@ package com.creatorsproject.ui
 			
 			_root = new DisplayObject3D();
 			this.addChild(_root);
-			_root.rotationY = 90;
+			_root.rotationY = _rootThetaOffset + _minTheta;
 			_root.z = 500;
 			
 			
@@ -117,8 +117,14 @@ package com.creatorsproject.ui
 			switch(_state) {
 				case "floors":
 				case "rooms":
-					if(fling.isFlinging) {
+					if(fling.isFlinging && _root.rotationY >= _minTheta && _root.rotationY <= _maxTheta)  {
 						_root.rotationY += - fling.velocity.x / 10;
+					} else {
+						if(_root.rotationY < _minTheta) {
+							_root.rotationY += (_minTheta - _root.rotationY) / 2 - fling.velocity.x / 10;
+						} else if(_root.rotationY > _maxTheta) {
+							_root.rotationY += (_maxTheta - _root.rotationY) / 2 - fling.velocity.x / 10;
+						}
 					}
 					break;
 			}
@@ -128,8 +134,9 @@ package com.creatorsproject.ui
 		 * Change the state of the UI 
 		 * @param value The new state 
 		 */		
-		public function set state(value:String):void {
+		override public function set state(value:String):void {
 			var oldState:String = _state;
+			super.state = value;
 			_state = value;
 			
 			trace("Event UI :: Changing to state " + value);
@@ -137,6 +144,10 @@ package com.creatorsproject.ui
 			switch(_state) {
 				case "floors":
 					_targetFloorBand = null;
+					
+					if(oldState == "disable") {
+						this.addChild(_root);
+					}
 					
 					hideMarkers();
 					
@@ -185,6 +196,13 @@ package com.creatorsproject.ui
 			}
 		}
 		
+		override protected function disableUI():void {
+			super.disableUI();
+			
+			this.hideMarkers();
+			this.removeChild(_root);
+		}
+		
 		// ________________________________________________ User Interaction
 
 		override protected function onMatteClick(event:GestureEvent):void {
@@ -193,6 +211,9 @@ package com.creatorsproject.ui
 				case "rooms":
 					// exit out of the rooms view
 					this.state = "roomToFloor";
+					break;
+				case "eventDetail":
+					onChipCloseRequest();
 					break;
 			}
 		}
@@ -227,7 +248,7 @@ package com.creatorsproject.ui
 			}
 		}
 		
-		private function onChipCloseRequest(event:Event):void {
+		private function onChipCloseRequest(event:Event = null):void {
 			if(_state == "eventDetail") {
 				main.instance.frontUI.removeChild(_detailChip);
 				this.state = "rooms";
@@ -376,7 +397,7 @@ package com.creatorsproject.ui
 					var text:TextField = new TextField();
 					text.htmlText = event.name;
 					text.x = startHr * _widthPerHour + 5;
-					text.y = top + height / 2 - 18;
+					text.y = top + height / 2 - 26;
 					text.width = (endHr - startHr) * _widthPerHour - 10;
 					text.height = height / 2 + 18;
 					
@@ -396,12 +417,19 @@ package com.creatorsproject.ui
 			g.drawRect(0, 0, _schedule.totalHours * _widthPerHour, 80);
 			g.endFill(); 
 			
+			var startPush:Number = _schedule.startDate.minutes / 60;
+			var startHr:Number = _schedule.startDate.hours;
+			
 			for(var t:int = 0; t < totalTicks; t ++) {
 				var text:TextField = new TextField();
-				text.htmlText = t + ":00";
+				if((startHr + t) % 24 < 10) {
+					text.htmlText = "0" + (startHr + t) % 24 + ":00";
+				} else {
+					text.htmlText = (startHr + t) % 24 + ":00";
+				}
 				text.height = 70;
 				text.y = 10;
-				text.x = t * _widthPerHour;
+				text.x = (t + startPush) * _widthPerHour;
 					
 				var format:TextFormat = new TextFormat("Neo Sans Intel", 36);
 				text.setTextFormat(format);
@@ -477,9 +505,13 @@ package com.creatorsproject.ui
 			var radius:Number = CURVE_RADIUS;
 			var step:Number = Math.atan2(_widthPerHour * _timeGranularity, radius);
 			
+			_minTheta = _rootThetaOffset;
+			_maxTheta = segments * step * 180 / Math.PI + _rootThetaOffset;
+			
 			for (var seg:int = 0; seg < segments + 1; seg ++) {
 				curve.push(new Vertex3D(radius * Math.cos(step * seg), 0, radius * Math.sin(step * seg)));
 			}
+			
 			_curve = curve;
 		}
 		

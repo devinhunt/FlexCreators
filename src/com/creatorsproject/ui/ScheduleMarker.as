@@ -1,10 +1,11 @@
 package com.creatorsproject.ui
 {
-	import flash.display.MovieClip;
 	import flash.text.TextField;
 	import flash.text.TextFormat;
+	
+	import mx.core.UIComponent;
 
-	public class ScheduleMarker extends MovieClip
+	public class ScheduleMarker extends UIComponent
 	{
 		// private var _title:String;
 		// private var _width:Number;

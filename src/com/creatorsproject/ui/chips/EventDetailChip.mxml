@@ -1,34 +1,44 @@
 <?xml version="1.0" encoding="utf-8"?>
-<mx:VBox xmlns:mx="http://www.adobe.com/2006/mxml" width="800" height="300" horizontalCenter="0" verticalCenter="0" backgroundColor="0xaaaaaa" horizontalAlign="center">
+<mx:VBox xmlns:mx="http://www.adobe.com/2006/mxml" width="900" height="300" creationComplete="init()" 
+	styleName="chip" horizontalAlign="center">
 	
 	<mx:Script>
 		<![CDATA[
 			import com.creatorsproject.data.PartyEvent;
 			
-			[Bindable]
-			public var eventData:PartyEvent;
+			private var _eventData:PartyEvent;
+			
+			public function set eventData(value:PartyEvent):void {
+				_eventData = value;
+				if(this.eventName) {				
+					this.eventName.text = _eventData.name;
+					this.eventTime.text = _eventData.dateString;
+					this.eventLocation.text = _eventData.roomName + " on " + _eventData.floorName;
+					this.eventSummary.text = _eventData.description;
+				}
+			}
+			
+			private function init():void {
+				this.eventData = _eventData;
+			}
 		]]>
 	</mx:Script>
 	
 	
 	<mx:HBox width="100%" height="100%">
 		
-		<mx:VBox width="33%">
-			<mx:Label id="eventName" text="{eventData.name}" />
-			<mx:Button label="About these guys"/>
+		<mx:VBox width="50%" height="100%" verticalAlign="middle" paddingRight="20">
+			<mx:Label id="eventName" styleName="bigTitle" />
+			
 		</mx:VBox>
 		
-		<mx:VBox width="33%">
-			<mx:Label id="eventTime" text="{eventData.dateString}" />
-			<mx:Label id="eventLocation" text="{eventData.roomName}" />
-			<mx:Button label="Where is this happening?" />
-		</mx:VBox>
-		
-		<mx:VBox width="33%">
-			<mx:Text id="eventSummary" text="{eventData.name}" />
+		<mx:VBox width="50%" height="100%" verticalAlign="top">
+			<mx:Label id="eventTime" styleName="mediumTitle" />
+			<mx:Label id="eventLocation" styleName="mediumTitle" />
+			<mx:Text id="eventSummary" styleName="detailText" />
 		</mx:VBox>
 		
 	</mx:HBox>
 	
-	<mx:Button label="Close" click="this.dispatchEvent(new Event(Event.CLOSE))" />
+	<mx:Button label="Close" click="this.dispatchEvent(new Event(Event.CLOSE))" styleName="touchButton" />
 </mx:VBox>

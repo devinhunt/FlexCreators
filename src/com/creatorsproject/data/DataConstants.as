@@ -1,5 +1,7 @@
 package com.creatorsproject.data
 {
+	import flash.filesystem.File;
+	
 	public class DataConstants
 	{
 		public static var isLocal:Boolean = true;
@@ -32,5 +34,7 @@ package com.creatorsproject.data
 		public static const roomColors:Object = { "First Floor" : 0xffffff,
 												   "Second Floor" : 0xffffff,
 												   "Eighth Floor" : 0xffffff }
+												   
+		public static var videoDir:File;
 	}
 }
