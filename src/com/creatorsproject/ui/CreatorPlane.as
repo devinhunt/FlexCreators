@@ -3,14 +3,16 @@ package com.creatorsproject.ui
 	import com.creatorsproject.data.Creator;
 	import com.creatorsproject.data.DataConstants;
 	
-	import flash.display.Bitmap;
 	import flash.display.Loader;
+	import flash.display.MovieClip;
 	import flash.events.Event;
 	import flash.events.IOErrorEvent;
 	import flash.net.URLRequest;
+	import flash.text.TextField;
+	import flash.text.TextFormat;
 	
-	import org.papervision3d.materials.BitmapMaterial;
 	import org.papervision3d.materials.ColorMaterial;
+	import org.papervision3d.materials.MovieMaterial;
 	import org.papervision3d.objects.primitives.Plane;
 
 	public class CreatorPlane extends Plane
@@ -22,7 +24,7 @@ package com.creatorsproject.ui
 		{
 			var c:ColorMaterial = new ColorMaterial();
 			c.interactive = true;
-			super(c, 401, 307, 1, 1);
+			super(c, 401, 352);
 			this.creator = creator;
 			this.loadImage();
 		}
@@ -35,10 +37,28 @@ package com.creatorsproject.ui
 		}
 		
 		private function onLoadComplete(event:Event):void {
+			/*
 			var image:Bitmap = _imageLoader.content as Bitmap;
 			var bMat:BitmapMaterial = new BitmapMaterial(image.bitmapData);
-			bMat.interactive = true;
-			this.material = bMat;
+			*/
+			
+			var tex:MovieClip = new MovieClip();
+			tex.addChild(_imageLoader);
+			
+			var t:TextField = new TextField();
+			t.text = creator.name;
+			var format:TextFormat = new TextFormat("Neo Sans Intel", 32);
+			t.setTextFormat(format);
+			t.x = 20;
+			t.y = _imageLoader.height + 10;
+			t.width = 2 * _imageLoader.width / 3;
+			t.height = 40;
+			
+			tex.addChild(t);
+			
+			var mMat:MovieMaterial = new MovieMaterial(tex, true, false);
+			mMat.interactive = true;
+			this.material = mMat;
 		}
 		
 		private function onImageError(event:IOErrorEvent):void {

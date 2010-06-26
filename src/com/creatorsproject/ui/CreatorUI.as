@@ -7,6 +7,8 @@ package com.creatorsproject.ui
 	import com.creatorsproject.input.events.GestureEvent;
 	import com.creatorsproject.ui.chips.CreatorDetailChip;
 	
+	import flash.events.Event;
+	
 	import org.papervision3d.events.InteractiveScene3DEvent;
 	import org.papervision3d.objects.DisplayObject3D;
 	
@@ -35,6 +37,7 @@ package com.creatorsproject.ui
 			this.name = "Creator Module";
 			_partyData = partyData;
 			_detailChip = new CreatorDetailChip();
+			_detailChip.addEventListener(Event.CLOSE, onChipCloseRequest);
 			this.assembleCreatorsUI();
 			this.state = "creators";
 		}
@@ -70,7 +73,7 @@ package com.creatorsproject.ui
 			
 			switch(_state) {
 				case "creators":
-					
+					TouchController.me.unlockUI();
 					if(oldState == "disable") {
 						this.addChild(_root);
 					}
@@ -82,16 +85,14 @@ package com.creatorsproject.ui
 					break;
 					
 				case "creatorDetail":
-					try{
-						main.instance.frontUI.addChild(_detailChip);
-						var chips:Array = _partyData.getChipsForCreator(_targetChip.creator);
+					TouchController.me.lockUI();
+					main.instance.frontUI.addChild(_detailChip);
+					_detailChip.creatorData = _targetChip.creator;
 					
-						var video:PartyVideo = _partyData.getVideoFromId(chips[0].videoId);
-						
-						_detailChip.creatorData = _targetChip.creator;
+					try{
+						var chips:Array = _partyData.getChipsForCreator(_targetChip.creator);
+						var video:PartyVideo = _partyData.getVideoFromId(chips[0].videoId);	
 						_detailChip.partyVideo = video;
-						
-						_detailChip.loadVideo();
 					} catch(e:Error) {
 						trace("VIDEO FAILED TO LOAD");
 					}
@@ -115,6 +116,12 @@ package com.creatorsproject.ui
 		}
 		
 		override protected function onMatteClick(event:GestureEvent):void {
+			if(_state == "creatorDetail") {
+				this.state = "creators";
+			}
+		}
+		
+		private function onChipCloseRequest(event:Event = null):void {
 			if(_state == "creatorDetail") {
 				this.state = "creators";
 			}

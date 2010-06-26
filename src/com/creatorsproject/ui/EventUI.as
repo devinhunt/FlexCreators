@@ -45,7 +45,7 @@ package com.creatorsproject.ui
 		
 		/** The curve that schedule tiles follow */
 		private var _curve:Array;
-		private var _rootThetaOffset:Number = 90;
+		private var _rootThetaOffset:Number = 100;
 		private var _minTheta:Number = 0;
 		private var _maxTheta:Number = 0;
 		
@@ -262,6 +262,7 @@ package com.creatorsproject.ui
 			
 			var tex:MovieClip = this.makeTimeTexutre();
 			var mat:MovieMaterial = new MovieMaterial(tex);
+			mat.smooth = true;
 			
 			var timeline:TileBand = new TileBand(mat, _curve, 80);
 			
@@ -306,21 +307,21 @@ package com.creatorsproject.ui
 		}
 		
 		protected function getFloorBand(floor:EventFloor):TileBand {
-			if(! _tilebandCache[floor.name]) {
+			if(! _tilebandCache[floor.name + floor.id]) {
 				var tex:MovieClip = this.makeFloorTexture(floor, _bandHeight);
 				var mat:MovieMaterial = new MovieMaterial(tex, false, false, true);
 				mat.smooth = true;
 				mat.interactive = true;
 				var band:TileBand = new TileBand(mat, _curve, _bandHeight);
 				band.data = floor;
-				_tilebandCache[floor.name] = band;
+				_tilebandCache[floor.name + floor.id] = band;
 			}
 			
-			return _tilebandCache[floor.name];
+			return _tilebandCache[floor.name + floor.id];
 		}
 		
 		protected function getRoomBand(room:EventRoom, color:uint = 0xff00ff, floorColor:uint = 0xff00ff):TileBand {
-			if(! _tilebandCache[room.name]) {
+			if(! _tilebandCache[room.name + room.id]) {
 				var tex:MovieClip = this.makeRoomTexture(room, _roomBandHeight, color, floorColor);
 				var mat:MovieMaterial = new MovieMaterial(tex, true, false, false);
 				mat.smooth = true;
@@ -328,10 +329,9 @@ package com.creatorsproject.ui
 				var band:TileBand = new TileBand(mat, _curve, _roomBandHeight);
 				band.data = room;
 				band.addEventListener(InteractiveScene3DEvent.OBJECT_RELEASE, this.onRoomBandRelease);
-				_tilebandCache[room.name] = band;
+				_tilebandCache[room.name + room.id] = band;
 			}
-			
-			return _tilebandCache[room.name];
+			return _tilebandCache[room.name + room.id];
 		}
 		
 		/**
@@ -349,12 +349,12 @@ package com.creatorsproject.ui
 			var floorColor:uint = DataConstants.floorColors[floor.name];
 			var roomColor:uint = DataConstants.roomColors[floor.name];
 			
-			tex.graphics.beginFill(floorColor);
+			tex.graphics.beginFill(floorColor, .3);
 			tex.graphics.drawRect(0, 0, _schedule.totalHours * _widthPerHour, texHeight);
 			tex.graphics.endFill(); 
 			
 			for(var r:int = 0; r < floor.rooms.length; r++) {
-				this.drawRoomTex(tex, floor.rooms[r], (texHeight / floor.rooms.length) * r, (texHeight / floor.rooms.length), roomColor);
+				this.drawRoomTex(tex, floor.rooms[r], (texHeight / floor.rooms.length) * r, (texHeight / floor.rooms.length), floorColor);
 			}
 			
 			return tex;
@@ -369,11 +369,11 @@ package com.creatorsproject.ui
 		 */		
 		private function makeRoomTexture(room:EventRoom, texHeight:Number = 100, color:uint = 0xff00ff, floorColor:uint = 0xff00ff):MovieClip {
 			var tex:MovieClip = new MovieClip();
-			tex.graphics.beginFill(floorColor);
+			tex.graphics.beginFill(floorColor, .3);
 			tex.graphics.drawRect(0, 0, _schedule.totalHours * _widthPerHour, texHeight);
 			tex.graphics.endFill(); 
 			
-			this.drawRoomTex(tex, room, 0, texHeight, color);
+			this.drawRoomTex(tex, room, 0, texHeight, floorColor);
 			
 			return tex;
 		}
@@ -396,12 +396,12 @@ package com.creatorsproject.ui
 					
 					var text:TextField = new TextField();
 					text.htmlText = event.name;
-					text.x = startHr * _widthPerHour + 5;
+					text.x = startHr * _widthPerHour + 20;
 					text.y = top + height / 2 - 26;
 					text.width = (endHr - startHr) * _widthPerHour - 10;
 					text.height = height / 2 + 18;
 					
-					var format:TextFormat = new TextFormat("Neo Sans Intel", 36);
+					var format:TextFormat = new TextFormat("Neo Sans Intel", 36, 0xffffff);
 					text.setTextFormat(format);
 					parent.addChild(text); 
 			}
@@ -423,9 +423,9 @@ package com.creatorsproject.ui
 			for(var t:int = 0; t < totalTicks; t ++) {
 				var text:TextField = new TextField();
 				if((startHr + t) % 24 < 10) {
-					text.htmlText = "0" + (startHr + t) % 24 + ":00";
+					text.htmlText = "0" + (startHr + t) % 12 + ":00";
 				} else {
-					text.htmlText = (startHr + t) % 24 + ":00";
+					text.htmlText = (startHr + t) % 12 + ":00";
 				}
 				text.height = 70;
 				text.y = 10;
@@ -506,7 +506,7 @@ package com.creatorsproject.ui
 			var step:Number = Math.atan2(_widthPerHour * _timeGranularity, radius);
 			
 			_minTheta = _rootThetaOffset;
-			_maxTheta = segments * step * 180 / Math.PI + _rootThetaOffset;
+			_maxTheta = segments * step * 180 / Math.PI + (180 - _rootThetaOffset);
 			
 			for (var seg:int = 0; seg < segments + 1; seg ++) {
 				curve.push(new Vertex3D(radius * Math.cos(step * seg), 0, radius * Math.sin(step * seg)));

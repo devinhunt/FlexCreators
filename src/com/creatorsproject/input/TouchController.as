@@ -66,6 +66,8 @@ package com.creatorsproject.input
 		protected var _state:String;
 		private var _mattePressed:Boolean = false;
 		
+		private var _isLocked:Boolean = false;
+		
 		public function get state():String { return _state; } 
 		public function get stage():Stage { return _stage; }
 		public function get matte():InteractiveObject { return _matte; }
@@ -146,6 +148,10 @@ package com.creatorsproject.input
 		}
 		
 		public function dispatchSwipeEvent(type:String):void {
+			if(_isLocked) {
+				return;
+			}
+			
 			var event:GestureEvent = new GestureEvent(type);
 			if(Math.abs(_currentTouch.x - _initialTouch.x) >= Math.abs(_currentTouch.y - _initialTouch.y)) {
 				event.majorAxis = GestureEvent.X_AXIS;
@@ -154,6 +160,14 @@ package com.creatorsproject.input
 			}
 			event.delta = _currentTouch.subtract(_lastTouch);
 			this.dispatchEvent(event);
+		}
+		
+		public function lockUI():void {
+			_isLocked = true;
+		}
+		
+		public function unlockUI():void {
+			_isLocked = false;
 		}
 	}
 }

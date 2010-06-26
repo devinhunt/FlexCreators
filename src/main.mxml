@@ -26,10 +26,17 @@
 			font-size: 32px;
 		}
 		
-		.detailText {
+		.smallTitle {
 			font-family: "Neo Sans Intel";
 			color: #ffffff;
-			font-size: 14;
+			font-size: 18px;
+		}
+		
+		.detailText {
+			font-family: "Neo Sans Intel Light";
+			color: #ffffff;
+			font-size: 16;
+			letterSpacing: 1;
 		}
 		
 		.touchButton {
@@ -42,7 +49,7 @@
 			highlightAlphas: 0, 0;
 			fillAlphas: 1, 1, 1, 1;
 			fillColors: #222222, #222222, #222222, #222222;
-			color: #ffffff;
+			color: #aaaaaa;
 			textRollOverColor: #0b333c;
 			textSelectedColor: #000033;
 			borderColor: #aab3b3;
@@ -50,10 +57,19 @@
 			fontWeight: normal;
 		}
 		
+		.headerText {
+			font-family: "Neo Sans Intel Light";
+			font-size: 24;
+			color: #ffffff;
+		}
+		
 	</mx:Style>
 
 	<mx:Script>
 		<![CDATA[
+			import com.creatorsproject.ui.Tab;
+			import org.papervision3d.core.proto.MaterialObject3D;
+			import org.papervision3d.objects.primitives.Plane;
 			import com.creatorsproject.ui.MapMarker;
 			import com.creatorsproject.ui.MapUI;
 			import com.creatorsproject.data.DataConstants;
@@ -117,12 +133,15 @@
 			private var _camMax:Number;
 			private var _camMin:Number;
 			private var _camTarget:Number = 0;
+			private var _camState:String = "creator";
+			
+			private var tab1:Tab;
+			private var tab2:Tab;
 			
 			// ____________________________________________ Application Setup
 			
 			public function init(isLocal:Boolean = true):void {
 				DataConstants.videoDir = new File();
-				DataConstants.videoDir.addEventListener(Event.SELECT, onVideoDirSelect);
 				DataConstants.videoDir.browseForDirectory("Where are the video files, blood");
 				
 				DataConstants.isLocal = isLocal
@@ -149,10 +168,6 @@
 				this.initInterface();
 			}
 			
-			public function onVideoDirSelect(event:Event):void {
-				trace(DataConstants.videoDir.url);
-			}
-			
 			public function init3D():void {
 				_viewport = new Viewport3D(0, 0, true, true);
 				_renderer = new BasicRenderEngine();
@@ -174,7 +189,7 @@
 				
 				_mapUI = new MapUI(_partyData);
 				_scene.addChild(_mapUI);
-				setUIPosition(_mapUI, 20);
+				setUIPosition(_mapUI, 14);
 				
 				_creatorUI = new CreatorUI(_partyData);
 				_scene.addChild(_creatorUI);
@@ -182,10 +197,26 @@
 				
 				_eventUI = new EventUI(_partyData);
 				_scene.addChild(_eventUI);
-				setUIPosition(_eventUI, -20);
+				setUIPosition(_eventUI, -14);
 				
 				_camMax = 30;
 				_camMin = -30;
+				
+				tab1 = new Tab();
+				tab1.setStyle("horizontalCenter", 0);
+				tab1.direction = "up";
+				tab1.text = "Schedule";
+				
+				tab2 = new Tab();
+				tab2.setStyle("horizontalCenter", 0);
+				tab2.direction = "down";
+				tab2.text = "Map";
+				
+				this.frontUI.addChild(tab1);
+				this.frontUI.addChild(tab2);
+				
+				this.positionTabs(_camTarget);
+				
 				
 				// finally, get the camera into place
 				_camera.z = -5000;
@@ -220,6 +251,11 @@
 					}
 				}
 				_renderer.renderScene(_scene, _camera, _viewport);
+				
+				if(this.currentTime) {
+					currentTime.text = (new Date()).toLocaleTimeString();
+					
+				}
 			}
 			
 			public function toggleFullscreen():void {
@@ -248,42 +284,50 @@
 					var mapDelta:Number = Math.abs(_mapUI.rotationX - c);
 					
 					if(mapDelta == Math.min(mapDelta, eventDelta, creatorDelta)) {
-						_camTarget = -20;
+						_camTarget = -14;
+						_camState = "map";
 					} else if(creatorDelta == Math.min(mapDelta, eventDelta, creatorDelta)) {
 						_camTarget = 0;
+						_camState = "creator";
 					} else {
-						_camTarget = 20;
+						_camTarget = 14;
+						_camState = "event";
 					}
 					
-					if(eventDelta < 10 && _eventUI.state == "disable") {
+					setTabStrings();
+					
+					if(eventDelta < 7 && _eventUI.state == "disable") {
 						_eventUI.state = "floors";
-					} else if(creatorDelta < 10 && _creatorUI.state == "disable") {
+					} else if(creatorDelta < 7 && _creatorUI.state == "disable") {
 						_creatorUI.state = "creators";
-					} else if(mapDelta < 10 && _mapUI.state == "disable") {
+					} else if(mapDelta < 7 && _mapUI.state == "disable") {
 						_mapUI.state = "overview";
 					}
 					
 					this.setCamLocation(c);
+					
+					// tabmotion
 				}
 				
 				if(event.type == GestureEvent.SWIPE_END) {
 					this.addEventListener(Event.ENTER_FRAME, onResetCamera);
 					
-					switch(_camTarget) {
-						case -20:
+					switch(_camState) {
+						case "map":
 							_creatorUI.state = "disable";
 							_eventUI.state = "disable";
 							break;
-						case 0:
+						case "creator":
 							_eventUI.state = "disable";
 							_mapUI.state = "disable";
 							break;
-						case 20:
+						case "event":
 							_creatorUI.state = "disable";
 							_mapUI.state = "disable";
 							break;
 					}
 				}
+				
 			}
 			
 			private function onResetCamera(event:Event):void {
@@ -301,6 +345,41 @@
 				_camera.rotationX = theta;
 				_camera.z = -5000 * Math.cos(theta * Math.PI / 180);
 				_camera.y = 5000 * Math.sin(theta * Math.PI / 180);
+				this.positionTabs(theta);
+			}
+			
+			private function positionTabs(camTheta:Number):void {
+				var locks:Array = this.getTabLocks();
+				var offset:Number = _camTarget - camTheta;
+				
+				tab1.y = locks[0] - (offset * 30)
+				tab1.alpha = 1 - Math.abs(offset) / 7;
+				
+				tab2.y = locks[1] - (offset * 30)
+				tab2.alpha = 1 - Math.abs(offset) / 7;
+			}
+			
+			private function setTabStrings():void {
+				if(_camState == "event") {
+					tab1.visible = false;
+					tab2.visible = true;
+					tab2.text = "CREATORS";					
+				} else if(_camState == "creator") {
+					tab1.visible = true;
+					tab2.visible = true;
+					tab1.text = "EVENTS";
+					tab2.text = "MAP";
+				} else {
+					tab1.visible = true;
+					tab2.visible = false;
+					tab1.text = "CREATORS";
+				}
+			}
+			
+			private function getTabLocks():Array {
+				
+				return [60, this.frontUI.height - 110]
+				
 			}
 			
 			// ____________________________________________ Demos
@@ -309,15 +388,15 @@
 	
 	<mx:Canvas id="clickMatte" backgroundColor="0xffffff" width="100%" height="100%" />
 	<mx:UIComponent id="backUI" width="100%" height="100%" opaqueBackground="0xffffff"/>
-	<mx:Canvas id="frontUI" width="100%" height="100%"/>
+	<mx:Canvas id="frontUI" width="100%" height="100%" horizontalScrollPolicy="off" verticalScrollPolicy="off" />
 	
-	<mx:HBox id="barTop" height="60" width="100%" x="0" y="0" backgroundColor="0x000000">
-
+	<mx:HBox id="barTop" height="60" width="100%" x="0" y="0" backgroundColor="0x000000" paddingTop="12" paddingLeft="20">
+		<mx:Label id="currentTime" styleName="headerText" />
 	</mx:HBox>	
 	<mx:Canvas id="barBottom" height="60" width="100%" bottom="0" x="0" backgroundColor="0x000000"
 		 horizontalScrollPolicy="off" verticalScrollPolicy="off">
-		<mx:Image source="{creatorLogo}" top="10" left="10"/>
-		<mx:Image source="{viceLogo}" top="10" right="10"/>
+		<mx:Image source="{creatorLogo}" top="12" left="20"/>
+		<mx:Image source="{viceLogo}" top="15" right="20"/>
 	</mx:Canvas>
 	
 	<mx:Button id="fullScreenButton" label="Toggle your screen" right="10" bottom = "10" click="this.toggleFullscreen()"/>

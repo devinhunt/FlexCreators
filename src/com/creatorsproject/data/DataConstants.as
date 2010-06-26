@@ -27,9 +27,9 @@ package com.creatorsproject.data
 		public static function get mediaUrl():String { return isLocal ? URL_LOCAL_IMG : URL_LIVE_IMG; }
 		public static function get serverUrl():String { return isLocal ? URL_LOCAL : URL_LIVE; }
 		
-		public static const floorColors:Object = { "First Floor" : 0x333333,
-												   "Second Floor" : 0x222222,
-												   "Eighth Floor" : 0x000000 }
+		public static const floorColors:Object = { "First Floor" : 0xED1C8F,
+												   "Second Floor" : 0xf8941d,
+												   "Eighth Floor" : 0x00AFDB }
 		
 		public static const roomColors:Object = { "First Floor" : 0xffffff,
 												   "Second Floor" : 0xffffff,
