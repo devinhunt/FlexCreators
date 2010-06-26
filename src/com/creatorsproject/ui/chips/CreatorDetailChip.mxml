@@ -9,9 +9,6 @@
 			import com.creatorsproject.data.PartyCreatorChip;
 			import com.creatorsproject.data.Creator;
 			import mx.controls.videoClasses.VideoPlayer;
-			
-			public var onMetaData:Object = onMetaDataFunc;
-			public var onXMPData:Object = onXMPDataFunc;
 
 			private var _creatorData:Creator;
 			private var _partyVideo:PartyVideo;
@@ -27,92 +24,13 @@
 			
 			public function set partyVideo(value:PartyVideo):void {
 				_partyVideo = value;
-			}
-			
-			private function initVideo():void {
-				_video = new Video();
-				this.videoWrapper.addChild(_video);
-			}
-			
-			public function loadVideo():void {
-				
-				if(!_video) {
-					this.initVideo();
-				}
-				
-				var nc:NetConnection = new NetConnection();
-				nc.connect(null);
-				
-				ns = new NetStream(nc);
-				ns.client = this;
-				
-				_video.attachNetStream(ns);
-				
-				var fileUrl:String = DataConstants.videoDir.url + File.separator + _partyVideo.fileName;
-				trace(fileUrl);
-				var f:File = new File(fileUrl);
-				
-				ns.bufferTime = 1;
-				ns.addEventListener(NetStatusEvent.NET_STATUS, onVideoStatus);
-				ns.addEventListener(StatusEvent.STATUS, onStatus);
-				ns.addEventListener(IOErrorEvent.IO_ERROR, onVideoIOError);
-				ns.play(f.url);
+				this.video.source = DataConstants.videoDir.url + File.separator + _partyVideo.fileName;
 			}
 			
 			public function haltVideo():void {
-				if(ns) {
-					ns.pause();
+				if(video) {
+					video.stop();
 				}
-			}
-			
-			private function onVideoIOError(event:IOErrorEvent):void {
-				
-			}
-			
-			private function onStatus(event:StatusEvent):void {
-				
-			}
-			
-			private function onVideoStatus(event:NetStatusEvent):void {
-				
-			}
-			
-			private function onMetaDataFunc(metadata:Object):void {
-				var h:Number = metadata.width;
-				var w:Number = metadata.height;
-				var ratio:Number = w / h;
-				
-				if(w > 900) {
-					trace("FIXING WIDTH");
-					var fixRatio:Number = 900 / w;
-					_video.width = 900;
-					_video.height = h * fixRatio;
-				} else if(h > 450) {
-					trace("FIXING HEIGHT");
-					var fixRatio:Number = 450 / h;
-					_video.width = w * fixRatio;
-					_video.height = 450;
-				} else {
-					_video.width = w;
-					_video.height = h;
-				}
-				
-				_video.x = 950 / 2 - w / 2;
-				_video.y = 450 / 2 - h / 2;
-			}
-			
-			private function onXMPDataFunc(data:Object):void {
-				trace(data);
-			}
-			
-			private function onEnterFrame(event:Event):void {
-				if(ns) {
-					
-				}
-			}
-			
-			private function playVideo():void {
-				
 			}
 		]]>
 	</mx:Script>
@@ -125,7 +43,5 @@
 		</mx:Canvas>
 	</mx:HBox>
 	
-	<mx:UIComponent id="videoWrapper" width="900" height="450">
-		
-	</mx:UIComponent>
+	<mx:VideoDisplay id="video" width="100%" height="420" backgroundColor="0x000000"/>
 </mx:VBox>

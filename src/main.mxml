@@ -116,7 +116,7 @@
 			
 			private var _camMax:Number;
 			private var _camMin:Number;
-			private var _camTarget:Number;
+			private var _camTarget:Number = 0;
 			
 			// ____________________________________________ Application Setup
 			
@@ -257,13 +257,9 @@
 					
 					if(eventDelta < 10 && _eventUI.state == "disable") {
 						_eventUI.state = "floors";
-					}
-					
-					if(creatorDelta < 10 && _creatorUI.state == "disable") {
+					} else if(creatorDelta < 10 && _creatorUI.state == "disable") {
 						_creatorUI.state = "creators";
-					}
-					
-					if(mapDelta < 10 && _mapUI.state == "disable") {
+					} else if(mapDelta < 10 && _mapUI.state == "disable") {
 						_mapUI.state = "overview";
 					}
 					
@@ -315,7 +311,7 @@
 	<mx:UIComponent id="backUI" width="100%" height="100%" opaqueBackground="0xffffff"/>
 	<mx:Canvas id="frontUI" width="100%" height="100%"/>
 	
-	<mx:HBox id="barTop" height="40" width="100%" x="0" y="0" backgroundColor="0x000000">
+	<mx:HBox id="barTop" height="60" width="100%" x="0" y="0" backgroundColor="0x000000">
 
 	</mx:HBox>	
 	<mx:Canvas id="barBottom" height="60" width="100%" bottom="0" x="0" backgroundColor="0x000000"
