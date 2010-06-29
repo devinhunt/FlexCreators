@@ -4,6 +4,7 @@
 	
 	<mx:Script>
 		<![CDATA[
+			import com.creatorsproject.data.PartyEvent;
 			import com.creatorsproject.data.PartyVideo;
 			import com.creatorsproject.data.DataConstants;
 			import com.creatorsproject.data.PartyCreatorChip;
@@ -12,9 +13,14 @@
 
 			private var _creatorData:Creator;
 			private var _partyVideo:PartyVideo;
+			private var _eventData:PartyEvent;
 			private var _video:Video;
 			private var ns:NetStream;
 			
+			[Bindable]
+			private var eventTime:String;
+			[Bindable]
+			private var eventPlace:String;
 			[Bindable]
 			private var artistNameText:String;
 			[Bindable]
@@ -25,6 +31,15 @@
 				
 				artistNameText = _creatorData.name;
 				descriptionText = _creatorData.synopsis;
+			}
+			
+			public function set eventData(value:PartyEvent):void {
+				if(value) {
+					_eventData = value;
+					eventTime = _eventData.dateString;
+					eventPlace = _eventData.roomName;
+					this.optionals.visible = true;
+				}
 			}
 			
 			public function set partyVideo(value:PartyVideo):void {
@@ -42,6 +57,8 @@
 					video.visible = false;
 					video.source = "";
 				}
+				
+				this.optionals.visible = false;
 			}
 		]]>
 	</mx:Script>
@@ -49,6 +66,12 @@
 	<mx:VideoDisplay id="video" 
 		width="580" height="620" top="10" right="10" backgroundColor="0x000000" autoPlay="true"/>
 		
+	<mx:VBox id="optionals" width="580" height="620" top="10" right="10" visible="false"
+		verticalAlign="middle" horizontalAlign="right" paddingRight="20">
+		<mx:Label text="{eventTime}" styleName="bigTitle" horizontalCenter="0" />
+		<mx:Label text="{eventPlace}" styleName="mediumTitle" horizontalCenter="0" />
+	</mx:VBox>
+	
 	<mx:Label id="artistName" styleName="bigTitle" text="{artistNameText}" top="10" left="10" />
 		
 	<mx:Canvas height="480" width="320" top="{this.artistName.height + 20}" left="10">

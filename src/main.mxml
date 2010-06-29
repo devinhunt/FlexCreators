@@ -363,7 +363,7 @@
 				if(_camState == "event") {
 					tab1.visible = false;
 					tab2.visible = true;
-					tab2.text = "CREATORS";					
+					tab2.text = "NY LINEUP";					
 				} else if(_camState == "creator") {
 					tab1.visible = true;
 					tab2.visible = true;
@@ -372,7 +372,7 @@
 				} else {
 					tab1.visible = true;
 					tab2.visible = false;
-					tab1.text = "CREATORS";
+					tab1.text = "NY LINEUP";
 				}
 			}
 			

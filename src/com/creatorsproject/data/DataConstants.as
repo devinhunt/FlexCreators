@@ -22,6 +22,7 @@ package com.creatorsproject.data
 		public static const URL_VIDEO:String = "api/videos/";
 		public static const URL_STATUS:String = "api/status/";
 		public static const URL_STATUS_SINCE:String = "api/status/since/";
+		public static const URL_PHOTO:String = "api/livephoto/";
 		public static const URL_PHOTO_LATEST:String = "api/livephoto/latest/";
 		
 		public static function get mediaUrl():String { return isLocal ? URL_LOCAL_IMG : URL_LIVE_IMG; }

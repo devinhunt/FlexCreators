@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <mx:WindowedApplication xmlns:mx="http://www.adobe.com/2006/mxml" layout="absolute" width="1370" height="768" enterFrame="tick()"
-	horizontalScrollPolicy="off" verticalScrollPolicy="off">
+	horizontalScrollPolicy="off" verticalScrollPolicy="off" backgroundColor="0x0">
 
 	<mx:Style>
 	
@@ -14,24 +14,34 @@
 		*/
 		
 		.headerText {
-			font-family: NeoSansIntel;
+			font-family: "Neo Sans Intel Light";
 			font-size: 24;
 			color: #ffffff;
+			letter-spacing: 2;
 		}
 		
 		.statusSmall {
-			font-family: NeoSansIntel;
-			font-size: 10;
+			font-family: "Neo Sans Intel";
+			font-size: 14;
 			color: #0079bc;
+			letter-spacing: 2;
+		}
+		
+		.status {
+			font-family: "Neo Sans Intel";
+			font-size: 24;
+			color: #000000;
+			letter-spacing: 2;
 		}
 		
 		.statusBig {
-			font-family: NeoSansIntel;
-			font-size: 18;
+			font-family: "Neo Sans Intel Light";
+			font-size: 82;
 			color: #000000;
 			
 			padding-top: 0;
 			padding-bottom: 0;
+			letter-spacing: 2;
 		}
 	</mx:Style>
 
@@ -53,6 +63,9 @@
 			public var _nextEvents:Array;
 			
 			public var _isAnimatingMajor:Boolean = false;
+			
+			public var _fillColors:Array = [ 0xED1C8F, 0xf8941d, 0x00AFDB ];
+			public var _fillCounter:int = 0;
 			
 			/**
 			 * Entry Point
@@ -78,7 +91,10 @@
 			private function onNewMajor(event:Event):void {
 				var newMajor:PartyStatus = _partyData.latestMajor;
 				if(newMajor) {
+					_fillCounter = (_fillCounter + 1) % _fillColors.length;
+					
 					this.majorStatus.text = newMajor.status;
+					
 					if(! _isAnimatingMajor) {
 						_isAnimatingMajor = true;
 						this.addEventListener(Event.ENTER_FRAME, onMajorFrame);
@@ -88,7 +104,7 @@
 			}
 			
 			private var step:int = 0;
-			private var maxStep:int = 300;
+			private var maxStep:int = 100;
 			
 			private function onMajorFrame(event:Event = null):void {
 				var g:Graphics = this.majorMatte.graphics;
@@ -96,7 +112,7 @@
 				var hold:Number = .05
 				
 				g.clear();
-				g.beginFill(0xff00ff, .8);
+				g.beginFill(_fillColors[_fillCounter], .8);
 				if(step < maxStep * hold) {
 					mag = this.majorMatte.width * Math.sin(step / (maxStep * hold) * Math.PI / 2);
 					g.drawRect(0, 0, mag, majorMatte.height);
@@ -120,7 +136,7 @@
 				if(_nextEvents.length < 1) {
 					return;
 				}
-				var currentDate:Date = new Date(2010, 6, 24, 1, 57, 28);
+				var currentDate:Date = new Date();
 				var event:PartyEvent = _nextEvents[0];
 				
 				var secs:int = ((currentDate.getTime() - event.startTime.getTime()) / 1000) % 60;
@@ -145,20 +161,30 @@
 				}
 			}
 			
+			public function toggleFullscreen():void {
+				if(stage.displayState == StageDisplayState.NORMAL) {
+					stage.displayState = StageDisplayState.FULL_SCREEN_INTERACTIVE;
+					this.showStatusBar = false;
+					this.fullScreenButton.visible = false;
+				} else {
+					stage.displayState = StageDisplayState.NORMAL;
+				}
+			}
+			
 		]]>
 	</mx:Script>
 	
 	<mx:Canvas width="70%" height="90%" bottom="0" left="0" horizontalScrollPolicy="off" verticalScrollPolicy="off">
-		<mx:Image source="{_partyData.livePhoto.imageUrl}" />
+		<mx:Image source="{_partyData.livePhoto.imageUrl}" horizontalAlign="center" verticalAlign="center" />
 		
 		<mx:Canvas width="100%" height="100%" backgroundColor="0x000000" backgroundAlpha=".2" id="majorMatte" />
 		
-		<mx:Text id="majorStatus" color="0xffffff" fontSize="72" fontFamily="NeoSansIntel"
-			width="70%" height="100%" paddingTop="20" paddingBottom="20" paddingLeft="20" paddingRight="20"/>
+		<mx:Text id="majorStatus" color="0xffffff" styleName="statusBig"
+			width="66%" height="100%" paddingTop="20" paddingBottom="20" paddingLeft="20" paddingRight="20"/>
 	</mx:Canvas>
 	
 	
-	<mx:HBox top="0" left="0" width="70%" backgroundColor="0x000000" height="10%" paddingTop="20" paddingLeft="20" paddingRight="20" >
+	<mx:HBox top="0" left="0" width="70%" backgroundColor="0x000000" height="10%" verticalAlign="middle" paddingLeft="20" paddingRight="20">
 		<mx:Label id="currentTime" styleName="headerText" />
 		<mx:Spacer height="10" width="100%" />
 		<mx:Label id="latestEvent" styleName="headerText" />
@@ -167,11 +193,12 @@
 	<mx:List id="statusList" top="0" right="0" width="30%" height="100%" 
 		backgroundColor="0x000000" borderThickness="0" columnWidth="{this.statusList.width}"
 		paddingTop="0" paddingBottom="0" paddingLeft="0" paddingRight="0" variableRowHeight="true"
-		itemRenderer="com.creatorsproject.ui.tv.StatusCard" dataProvider="{_partyData.statuses}" />
+		itemRenderer="com.creatorsproject.ui.tv.StatusCard" dataProvider="{_partyData.statuses}" horizontalScrollPolicy="off" verticalScrollPolicy="off"/>
 		
 	<mx:TitleWindow horizontalCenter="0" verticalCenter="0" title="Pick your server poison" id="initWindow">
 		<mx:Button label="Run Screen from Localhost" click="init()"/>
 		<mx:Button label="Run Screen from Production Server" click="init(false)" />
 	</mx:TitleWindow>
-		
+	
+	<mx:Button id="fullScreenButton" label="Toggle your screen" right="10" bottom = "10" click="this.toggleFullscreen()"/>
 </mx:WindowedApplication>

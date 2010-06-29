@@ -89,13 +89,13 @@ package com.creatorsproject.ui
 					main.instance.frontUI.addChild(_detailChip);
 					_detailChip.creatorData = _targetChip.creator;
 					
-					try{
-						var chips:Array = _partyData.getChipsForCreator(_targetChip.creator);
-						var video:PartyVideo = _partyData.getVideoFromId(chips[0].videoId);	
-						_detailChip.partyVideo = video;
-					} catch(e:Error) {
-						trace("VIDEO FAILED TO LOAD");
-					}
+					//try{
+					//	var chips:Array = _partyData.getChipsForCreator(_targetChip.creator);
+					//	var video:PartyVideo = _partyData.getVideoFromId(chips[0].videoId);	
+					//	_detailChip.partyVideo = video;
+					//} catch(e:Error) {
+					_detailChip.eventData = _partyData.getEventFromCreator(_targetChip.creator);
+					//}
 					break;
 			}
 		}

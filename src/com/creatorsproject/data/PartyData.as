@@ -21,10 +21,12 @@ package com.creatorsproject.data
 	{
 		
 		/** Interval (in milliseconds) that we check for new statuses */
-		public static const REFRESH_TIME:int = 5000;
+		public static const REFRESH_TIME:int = 10000;
 		
 		/** The maximum number of status we'll keep in local memory */
 		public static const MAX_STATUS:int = 20;
+		
+		public static const MAX_PHOTOS:int = 20;
 		
 		/** Are we pulling live updates ? */
 		private var _isLiveUpdating:Boolean = false;
@@ -64,6 +66,10 @@ package com.creatorsproject.data
 		[Bindable]
 		public var livePhoto:PartyPhoto;
 		
+		private var _photos:Array;
+		private var _photoPointer:int = 0;
+		
+		private var _lastPhotoId:int;
 		
 		/** The newest status id we have
 		 *  We are making the very lazy assumption that a larger primary key === newer */
@@ -92,6 +98,8 @@ package com.creatorsproject.data
 		public function startLiveUpdating():void {
 			_isLiveUpdating = true;
 			_liveTimer.start();
+			this.onUpdateTimer();
+		
 		}
 		
 		public function stopLiveUpdating():void {
@@ -99,9 +107,9 @@ package com.creatorsproject.data
 			_liveTimer.stop()
 		}
 		
-		private function onUpdateTimer(event:TimerEvent):void {
+		private function onUpdateTimer(event:TimerEvent = null):void {
 			this.updateLivePhoto();
-			this.updateStatuses();
+			this.updateStatuses();			 
 		}
 		
 		public function updateStatuses():void {
@@ -134,11 +142,11 @@ package com.creatorsproject.data
 				if( newStatus.state != "dead") {
 					
 					if(newStatus.state == "minor") {
-						statuses.addItem(newStatus);
+						statuses.addItemAt(newStatus, 0);
 					} else if(_latestMajor && _latestMajor.id < newStatus.id){
 						_latestMajor = newStatus;
 						newMajorFound = true;
-					} else {
+					} else if(! _latestMajor){
 						_latestMajor = newStatus;
 						newMajorFound = true;
 					}
@@ -148,7 +156,7 @@ package com.creatorsproject.data
 					}
 					
 					if(statuses.length > MAX_STATUS) {
-						statuses.removeItemAt(0);
+						statuses.removeItemAt(statuses.length - 1);
 					}
 				}
 				
@@ -160,23 +168,79 @@ package com.creatorsproject.data
 		
 		// ______________________________________ Photo Updating and Cycling
 		
-		public function updateLivePhoto():void {
-			var url:String = DataConstants.serverUrl + DataConstants.URL_PHOTO_LATEST;
+		public function updateFirstPhoto():void {
+			var url:String = DataConstants.serverUrl + DataConstants.URL_PHOTO;
 			var photoLoader:URLLoader = new URLLoader();
-			photoLoader.addEventListener(Event.COMPLETE, this.onPhotoReceived);
+			photoLoader.addEventListener(Event.COMPLETE, this.onFirstPhotoReceived);
 			photoLoader.addEventListener(IOErrorEvent.IO_ERROR, this.onJsonIOError);
 			photoLoader.load(new URLRequest(url));
+		}
+		
+		public function updateLivePhoto():void {
+			var url:String = DataConstants.serverUrl + DataConstants.URL_PHOTO;
+			var photoLoader:URLLoader = new URLLoader();
+			photoLoader.addEventListener(Event.COMPLETE, this.onFirstPhotoReceived);
+			photoLoader.addEventListener(IOErrorEvent.IO_ERROR, this.onJsonIOError);
+			photoLoader.load(new URLRequest(url));
+		}
+		
+		private function onFirstPhotoReceived(event:Event):void {
+			(event.target as URLLoader).removeEventListener(Event.COMPLETE, this.onPhotoReceived);
+			(event.target as URLLoader).removeEventListener(IOErrorEvent.IO_ERROR, this.onJsonIOError);
+			
+			var rawData:String = (event.target as URLLoader).data;
+			var rawPhoto:Array = JSON.decode(rawData);
+			
+			if(rawPhoto.length > 40) {
+				rawPhoto = rawPhoto.slice(0, 40);
+			}
+			
+			if(rawPhoto.length > 0) {
+				var index:int = Math.max(int(Math.random() * rawPhoto.length), 0);
+				this.livePhoto = new PartyPhoto(rawPhoto[index]);
+				trace("using index " + index + "  " + this.livePhoto.id + " " + this.livePhoto.imageUrl);
+			}
+			
+			/*
+			if(rawPhoto[0] != null) {
+				for each(var rawp:Object in rawPhoto) {
+					var foto:PartyPhoto = new PartyPhoto(rawp) 
+					_photos.push(foto);
+					if(foto.id > _lastPhotoId) {
+						_lastPhotoId = foto.id;
+					}
+				}
+				
+				this.livePhoto = _photos[_photoPointer];
+			}
+			*/
 		}
 		
 		private function onPhotoReceived(event:Event):void {
 			(event.target as URLLoader).removeEventListener(Event.COMPLETE, this.onPhotoReceived);
 			(event.target as URLLoader).removeEventListener(IOErrorEvent.IO_ERROR, this.onJsonIOError);
 			
-			var rawData:String = (event.target as URLLoader).data;
+			var rawData:String = (event.target as 	URLLoader).data;
 			var rawPhoto:Object = JSON.decode(rawData)
+			
 			if(rawPhoto[0] != null) {
-				this.livePhoto = new PartyPhoto(rawPhoto[0]);
-			}
+				var foto:PartyPhoto = new PartyPhoto(rawPhoto[0])
+				if(foto.id > _lastPhotoId) {
+					_lastPhotoId = foto.id;
+					_photos.push(new PartyPhoto(rawPhoto[0]));
+				
+					if(_photos.length > MAX_PHOTOS) {
+						_photos.shift();
+					}
+					
+					this.livePhoto = foto;
+				} else {
+					
+					this.livePhoto = _photos[_photoPointer++ % MAX_PHOTOS]
+				}
+			} else {
+				this.livePhoto = _photos[_photoPointer++ % MAX_PHOTOS]
+ 			}
 		}
 		
 		// ______________________________________ Data Updateting
@@ -411,6 +475,15 @@ package com.creatorsproject.data
 			}
 			
 			return events;
+		}
+		
+		public function getEventFromCreator(creator:Creator):PartyEvent {
+			for each(var event:PartyEvent in _events) {
+				if(event.creatorId == creator.id) {
+					return event;
+				}
+			}
+			return null;
 		}
 		
 		public function getFloorFromRoom(room:EventRoom):EventFloor {

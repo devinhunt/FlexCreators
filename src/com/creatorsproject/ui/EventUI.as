@@ -15,9 +15,11 @@ package com.creatorsproject.ui
 	import flash.display.Graphics;
 	import flash.display.MovieClip;
 	import flash.events.Event;
+	import flash.events.MouseEvent;
 	import flash.text.TextField;
 	import flash.text.TextFormat;
 	
+	import mx.controls.Button;
 	import mx.effects.easing.Elastic;
 	
 	import org.papervision3d.core.geom.renderables.Vertex3D;
@@ -36,7 +38,7 @@ package com.creatorsproject.ui
 		/** The schedule model we're displaying */
 		private var _schedule:PartyData;
 		
-		private var _widthPerHour:Number = 300;
+		private var _widthPerHour:Number = 340;
 		private var _bandHeight:Number = 200;
 		private var _roomBandHeight:Number = 100;
 		
@@ -76,6 +78,8 @@ package com.creatorsproject.ui
 		/** The display object for the event details. This will go on the Front UI plane */
 		private var _detailChip:EventDetailChip;
 		
+		private var _backButton:Button;
+		
 		/**
 		 * Default Constructor 
 		 * 
@@ -96,6 +100,15 @@ package com.creatorsproject.ui
 			_root.rotationY = _rootThetaOffset + _minTheta;
 			_root.z = 500;
 			
+			_backButton = new Button();
+			_backButton.label = "BACK";
+			//_backButton.setStyle("top", 10);
+			//_backButton.setStyle("left", 10);
+			_backButton.x = 70;
+			_backButton.y = 70;
+			_backButton.setStyle("right", 10);
+			_backButton.styleName = "touchButton";
+			_backButton.addEventListener(MouseEvent.CLICK, onBackClick);
 			
 			// things we should only need to do once
 			this.buildCurve();
@@ -172,7 +185,6 @@ package com.creatorsproject.ui
 					break;
 				case "rooms":
 					// TEMP TODO :: Need to be smarter about adding / removing these bands
-					
 					hideMarkers();
 					
 					var roomNames:Array = [];
@@ -181,13 +193,15 @@ package com.creatorsproject.ui
 					}
 					
 					showMarkers(roomNames, 70);
-					
+					main.instance.frontUI.addChild(_backButton);
 					_root.removeChild(_floorBands);
 					break;
 				case "roomToFloor":
 					_root.addChild(_floorBands);
 					this.roomToFloorAnimation();
-					//this.state = "floors"
+					
+					main.instance.frontUI.removeChild(_backButton);
+					
 					break;
 				case "eventDetail":
 					_detailChip.eventData  = _targetEventData;
@@ -231,6 +245,7 @@ package com.creatorsproject.ui
 		 * 
 		 */		
 		private function onRoomBandRelease(event:InteractiveScene3DEvent):void {
+			/*
 			if(TouchController.me.state == "touching" && _state == "rooms") {
 				var band:TileBand = event.target as TileBand;
 				var data:EventRoom = band.data as EventRoom;
@@ -245,6 +260,13 @@ package com.creatorsproject.ui
 						break;
 					}
 				}
+			}
+			*/
+		}
+		
+		private function onBackClick(event:MouseEvent):void {
+			if(_state == "rooms") {
+				this.state = "roomToFloor";
 			}
 		}
 		
@@ -396,13 +418,16 @@ package com.creatorsproject.ui
 					
 					var text:TextField = new TextField();
 					text.htmlText = event.name;
-					text.x = startHr * _widthPerHour + 20;
-					text.y = top + height / 2 - 26;
-					text.width = (endHr - startHr) * _widthPerHour - 10;
-					text.height = height / 2 + 18;
 					
-					var format:TextFormat = new TextFormat("Neo Sans Intel", 36, 0xffffff);
+					var format:TextFormat = new TextFormat("Neo Sans Intel", 24, 0xffffff);
 					text.setTextFormat(format);
+					text.width = (endHr - startHr) * _widthPerHour - 10;
+					text.height = height / 2 + 10;
+					
+					text.x = startHr * _widthPerHour + 15;
+					text.y = top + height / 2 - text.textHeight / 2;
+					
+					
 					parent.addChild(text); 
 			}
 		}
