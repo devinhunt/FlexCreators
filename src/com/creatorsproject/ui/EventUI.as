@@ -28,6 +28,13 @@ package com.creatorsproject.ui
 	import org.papervision3d.materials.MovieMaterial;
 	import org.papervision3d.objects.DisplayObject3D;
 	
+	/**
+	 * The master controller and display for the Event UI. The event UI is made up of a series of TileBands, 
+	 * which are textured with movieclips that are genereated dynamically.  
+	 * @author devin
+	 * 
+	 */	
+	
 	public class EventUI extends TouchUI implements ITickable
 	{
 		

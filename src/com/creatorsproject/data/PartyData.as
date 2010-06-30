@@ -198,22 +198,7 @@ package com.creatorsproject.data
 			if(rawPhoto.length > 0) {
 				var index:int = Math.max(int(Math.random() * rawPhoto.length), 0);
 				this.livePhoto = new PartyPhoto(rawPhoto[index]);
-				trace("using index " + index + "  " + this.livePhoto.id + " " + this.livePhoto.imageUrl);
 			}
-			
-			/*
-			if(rawPhoto[0] != null) {
-				for each(var rawp:Object in rawPhoto) {
-					var foto:PartyPhoto = new PartyPhoto(rawp) 
-					_photos.push(foto);
-					if(foto.id > _lastPhotoId) {
-						_lastPhotoId = foto.id;
-					}
-				}
-				
-				this.livePhoto = _photos[_photoPointer];
-			}
-			*/
 		}
 		
 		private function onPhotoReceived(event:Event):void {

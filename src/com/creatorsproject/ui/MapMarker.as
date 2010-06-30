@@ -9,6 +9,12 @@ package com.creatorsproject.ui
 	
 	import mx.core.UIComponent;
 
+
+	/**
+	 * Simple object that shows the current chip of the event on the map. Should be placed on the front UI. 
+	 * @author devin
+	 * 
+	 */	
 	public class MapMarker extends UIComponent
 	{
 		public function MapMarker(event:PartyEvent, w:Number = 50, h:Number = 50)

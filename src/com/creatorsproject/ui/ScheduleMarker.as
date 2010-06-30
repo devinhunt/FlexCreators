@@ -4,6 +4,14 @@ package com.creatorsproject.ui
 	import flash.text.TextFormat;
 	
 	import mx.core.UIComponent;
+	
+	/**
+	 * Simple little marker that we place on the front UI to mark names & positions of floors.
+	 * This is only drawin on creations, so you should cache different ones instead of trying
+	 * to change the text dynamically.  
+	 * @author devin
+	 * 
+	 */	
 
 	public class ScheduleMarker extends UIComponent
 	{

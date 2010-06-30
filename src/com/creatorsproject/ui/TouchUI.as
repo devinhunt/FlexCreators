@@ -7,7 +7,8 @@ package com.creatorsproject.ui
 	import org.papervision3d.objects.DisplayObject3D;
 	
 	/**
-	 * Base class for all major 3D components in the Touch UI. 
+	 * Base class for all major 3D components in the Touch UI. This provides the basic 
+	 * stating and touch sensitivity framework that we'll use in our major components 
 	 * @author devin
 	 * 
 	 */	

@@ -17,6 +17,13 @@ package com.creatorsproject.ui
 	import org.papervision3d.materials.BitmapMaterial;
 	import org.papervision3d.objects.DisplayObject3D;
 	import org.papervision3d.objects.primitives.Plane;
+	
+	/**
+	 * This is the UI controller and container for the map display for the touchscreens. It basically 
+	 * loads and shows a number of maps on 3d planes, and allows the suer to zoom into them with a touch. 
+	 * @author devin
+	 * 
+	 */	
 
 	public class MapUI extends TouchUI implements ITickable
 	{
@@ -54,6 +61,11 @@ package com.creatorsproject.ui
 			this.state = "overview"; 
 		}
 		
+		
+		/**
+		 * Builds the basical structure of the UI and assings the correct map images to the plane. 
+		 * 
+		 */				
 		public function assembleMapUI():void {
 			_root = new DisplayObject3D();
 			
@@ -81,6 +93,10 @@ package com.creatorsproject.ui
 			this.addChild(_root);
 		}
 		
+		/**
+		 * Places the maps in there correct, and default locations 
+		 * 
+		 */		
 		public function resetMaps():void {
 			var rad:Number = -2300;
 			
@@ -117,7 +133,6 @@ package com.creatorsproject.ui
 		/**
 		 * Required by ITickable 
 		 * Called during a render tick and we need to do the same to our children
-		 * TEMP TODO :: Do it to the kiddies
 		 */		
 		public function tick():void {
 			
@@ -166,6 +181,10 @@ package com.creatorsproject.ui
 			}
 		}
 		
+		/**
+		 * Alerts the UI that it is not being used, and it should clean itself up from the main stack.  
+		 * 
+		 */		
 		override protected function disableUI():void {
 			super.disableUI();
 			
@@ -250,6 +269,13 @@ package com.creatorsproject.ui
 			}
 		}
 		
+		/**
+		 * @private
+		 * Simple helper function that get's the current floor from the partyData in a rather greedy manner. 
+		 * @param name
+		 * @return 
+		 * 
+		 */		
 		private function dirtyGetFloor(name:String):EventFloor {
 			for each(var floor:EventFloor in _partyData.floors) {
 				if(floor.name == name) {

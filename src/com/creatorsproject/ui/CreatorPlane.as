@@ -14,6 +14,12 @@ package com.creatorsproject.ui
 	import org.papervision3d.materials.ColorMaterial;
 	import org.papervision3d.materials.MovieMaterial;
 	import org.papervision3d.objects.primitives.Plane;
+	
+	/**
+	 * The creators plan adds functionality to a plane to load and draw an Image from
+	 * a URL as it's main texture.  
+	 * @author devin
+	 */	
 
 	public class CreatorPlane extends Plane
 	{
@@ -37,10 +43,6 @@ package com.creatorsproject.ui
 		}
 		
 		private function onLoadComplete(event:Event):void {
-			/*
-			var image:Bitmap = _imageLoader.content as Bitmap;
-			var bMat:BitmapMaterial = new BitmapMaterial(image.bitmapData);
-			*/
 			
 			var tex:MovieClip = new MovieClip();
 			tex.addChild(_imageLoader);
