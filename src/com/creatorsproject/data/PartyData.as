@@ -26,7 +26,7 @@ package com.creatorsproject.data
 		/** The maximum number of status we'll keep in local memory */
 		public static const MAX_STATUS:int = 20;
 		
-		public static const MAX_PHOTOS:int = 20;
+		public static const MAX_PHOTOS:int = 40;
 		
 		/** Are we pulling live updates ? */
 		private var _isLiveUpdating:Boolean = false;
@@ -133,7 +133,7 @@ package com.creatorsproject.data
 			(event.target as URLLoader).removeEventListener(IOErrorEvent.IO_ERROR, this.onJsonIOError);
 			
 			var rawData:String = (event.target as URLLoader).data;
-			var rawStatuses:Object = JSON.decode(rawData)
+			var rawStatuses:Object = JSON.decode(rawData);
 			var newStatuses:Array = [];
 			var newMajorFound:Boolean = false;
 			
@@ -164,6 +164,7 @@ package com.creatorsproject.data
 					this.dispatchEvent(new Event("newMajor"));
 				}
 			}
+			this.dispatchEvent(new Event("newStatus"));
 		}
 		
 		// ______________________________________ Photo Updating and Cycling
@@ -185,47 +186,23 @@ package com.creatorsproject.data
 		}
 		
 		private function onFirstPhotoReceived(event:Event):void {
-			(event.target as URLLoader).removeEventListener(Event.COMPLETE, this.onPhotoReceived);
+			(event.target as URLLoader).removeEventListener(Event.COMPLETE, this.onFirstPhotoReceived);
 			(event.target as URLLoader).removeEventListener(IOErrorEvent.IO_ERROR, this.onJsonIOError);
 			
 			var rawData:String = (event.target as URLLoader).data;
-			var rawPhoto:Array = JSON.decode(rawData);
+			var rawPhoto:Array = JSON.decode(rawData).data;
 			
-			if(rawPhoto.length > 40) {
-				rawPhoto = rawPhoto.slice(0, 40);
+			if(rawPhoto.length > MAX_PHOTOS) {
+				rawPhoto = rawPhoto.slice(0, MAX_PHOTOS);
 			}
 			
 			if(rawPhoto.length > 0) {
 				var index:int = Math.max(int(Math.random() * rawPhoto.length), 0);
 				this.livePhoto = new PartyPhoto(rawPhoto[index]);
-			}
-		}
-		
-		private function onPhotoReceived(event:Event):void {
-			(event.target as URLLoader).removeEventListener(Event.COMPLETE, this.onPhotoReceived);
-			(event.target as URLLoader).removeEventListener(IOErrorEvent.IO_ERROR, this.onJsonIOError);
-			
-			var rawData:String = (event.target as 	URLLoader).data;
-			var rawPhoto:Object = JSON.decode(rawData)
-			
-			if(rawPhoto[0] != null) {
-				var foto:PartyPhoto = new PartyPhoto(rawPhoto[0])
-				if(foto.id > _lastPhotoId) {
-					_lastPhotoId = foto.id;
-					_photos.push(new PartyPhoto(rawPhoto[0]));
 				
-					if(_photos.length > MAX_PHOTOS) {
-						_photos.shift();
-					}
-					
-					this.livePhoto = foto;
-				} else {
-					
-					this.livePhoto = _photos[_photoPointer++ % MAX_PHOTOS]
-				}
-			} else {
-				this.livePhoto = _photos[_photoPointer++ % MAX_PHOTOS]
- 			}
+				// display a simple photo event to allow the application to buffer the load
+				this.dispatchEvent(new Event("photo"));
+			}
 		}
 		
 		// ______________________________________ Data Updateting
@@ -259,8 +236,8 @@ package com.creatorsproject.data
 			_rawFloorData = JSON.decode(rawData)
 			_floors = [];
 			
-			for each(var rawFloor:Object in _rawFloorData) {
-				_floors.push(new EventFloor(rawFloor.pk, rawFloor.fields.name, parseInt(rawFloor.fields.order))); 
+			for each(var rawFloor:Object in _rawFloorData.data) {
+				_floors.push(new EventFloor(rawFloor)); 
 			}
 			
 			var roomLoader:URLLoader = new URLLoader();
@@ -277,7 +254,7 @@ package com.creatorsproject.data
 			_rawRoomData = JSON.decode(rawData)
 			_rooms = [];
 			
-			for each(var rawRoom:Object in _rawRoomData) {
+			for each(var rawRoom:Object in _rawRoomData.data) {
 				_rooms.push(new EventRoom(rawRoom));
 			}
 			
@@ -305,11 +282,12 @@ package com.creatorsproject.data
 			_rawEventData = JSON.decode(rawData)
 			_events = [];
 			
-			for each(var rawEvent:Object in _rawEventData.events) {
+			for each(var rawEvent:Object in _rawEventData.data.events) {
 				_events.push(new PartyEvent(rawEvent));
 			}
 			
 			// associate our events chips with their events
+			/*
 			for each(var chip:Object in _rawEventData.chips) {
 				for each(var e:PartyEvent in _events) {
 					if(e.id == chip.fields.event) {
@@ -317,10 +295,11 @@ package com.creatorsproject.data
 					}
 				}
 			}
+			*/
 			
 			// associate our events with their room
 			for each(var room:EventRoom in _rooms) {
-				for each(e in _events) {
+				for each(var e:PartyEvent in _events) {
 					if(e.roomId == room.id) {
 						room.addEvent(e);
 						e.floorName = this.getFloorFromRoom(room).name;
@@ -376,14 +355,20 @@ package com.creatorsproject.data
 			_rawCreatorData = JSON.decode(rawData)
 			_creators = [];
 			
-			for each(var rawCreator:Object in _rawCreatorData) {
+			for each(var rawCreator:Object in _rawCreatorData.data) {
 				_creators.push(new Creator(rawCreator));
 			}
 			
+			/* WE ARE NOT GRABBING VIDEO THIS WAY ANYMORE 
 			var eventLoader:URLLoader = new URLLoader();
 			eventLoader.addEventListener(Event.COMPLETE, this.onVideosRecieved);
 			eventLoader.addEventListener(IOErrorEvent.IO_ERROR, this.onJsonIOError);
 			eventLoader.load(new URLRequest(DataConstants.serverUrl + DataConstants.URL_VIDEO));
+			*/
+			
+			// and we're done!
+			this._sceduleRecieved = true;
+			this.dispatchEvent(new Event(Event.COMPLETE));
 			
 		}
 		
@@ -402,7 +387,7 @@ package com.creatorsproject.data
 			var eventLoader:URLLoader = new URLLoader();
 			eventLoader.addEventListener(Event.COMPLETE, this.onCreatorChipsReciever);
 			eventLoader.addEventListener(IOErrorEvent.IO_ERROR, this.onJsonIOError);
-			eventLoader.load(new URLRequest(DataConstants.serverUrl + DataConstants.URL_CREATOR_CHIPS));
+			//eventLoader.load(new URLRequest(DataConstants.serverUrl + DataConstants.URL_CREATOR_CHIPS));
 		}
 		
 		public function onCreatorChipsReciever(event:Event):void {

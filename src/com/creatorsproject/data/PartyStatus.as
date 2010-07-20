@@ -15,7 +15,7 @@ package com.creatorsproject.data
 			id = parseInt(rawStatus.pk, 10);
 			status = rawStatus.fields.status;
 			time = PartyData.dateFromJSON(rawStatus.fields.created);
-			user = rawStatus.fields.user;
+			user = rawStatus.fields.author;
 			roomId = rawStatus.fields.room;
 			state = rawStatus.fields.state;
 		}

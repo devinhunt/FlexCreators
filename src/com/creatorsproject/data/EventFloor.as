@@ -11,11 +11,11 @@ package com.creatorsproject.data
 		/** All the rooms associated with this floor */
 		public var rooms:Array;
 		
-		public function EventFloor(id:String, name:String, order:int = 0)
+		public function EventFloor(rawFloor:Object)
 		{
-			this.id = id;
-			this.name = name;
-			this.order = order;
+			this.id = rawFloor.pk;
+			this.name = rawFloor.fields.name;
+			this.order = parseInt(rawFloor.fields.order, 10);
 			this.rooms = []; 
 		}
 		

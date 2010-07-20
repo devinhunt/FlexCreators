@@ -1,35 +1,39 @@
 <?xml version="1.0" encoding="utf-8"?>
-<mx:VBox xmlns:mx="http://www.adobe.com/2006/mxml" creationComplete="background()" dataChange="newData()" width="100%" height="300"
-	paddingTop="10" paddingBottom="10" paddingLeft="10" paddingRight="10" horizontalScrollPolicy="off" verticalScrollPolicy="off" resize="background()">
+<mx:VBox xmlns:mx="http://www.adobe.com/2006/mxml" horizontalScrollPolicy="off" verticalScrollPolicy="off"
+	paddingBottom="10" paddingTop="10" paddingLeft="10" paddingRight="10" verticalGap="0" dataChange="onDataChange(event)" render="background()" updateComplete="checkSize()">
 
 	<mx:Script>
 		<![CDATA[
-		
-			private function background():void {
-				this.height = this.getExplicitOrMeasuredHeight();
-				this.graphics.clear();
-				var gradBox:Matrix = new Matrix();
-				gradBox.createGradientBox(this.width, this.height, 90);
-				//this.graphics.beginFill(0xaaaaaa);
-				this.graphics.beginGradientFill("linear", [0xaaaaaa, 0xeeeeee], [1, 1], [0, 255], gradBox);
-				this.graphics.drawRect(0, 0, this.width, this.height);
-				this.graphics.endFill();
-			}
-		
 			
-			public function get authorString():String {
-				return "-posted by " + this.data.user;
-			}
-			
-			public function newData():void {
-				if(this.data) {
-					this.author.text = this.authorString;
+			private function onDataChange(event:Event = null):void {
+				if(data && this.author && this.status) {
+					this.status.text = this.data.status;
+					this.author.text = this.data.user + " - " + this.data.time.toLocaleTimeString();
 				}
 			}
+			
+			private function background(event:Event = null):void {
+				// set the background, to!
+				var g:Graphics = this.graphics;
+				var grad:Matrix = new Matrix();
+				grad.createGradientBox(this.width, this.height, 90);
+				
+				g.clear();
+				g.beginGradientFill(GradientType.LINEAR, [0xaaaaaa, 0xeeeeee], [1, 1], [0, 255], grad);
+				g.drawRect(0, 0, this.width, this.height);
+				g.endFill();
+			}
+			
+			private function checkSize():void {
+				var newHeight:Number = this.status.height + this.author.height + 20;
+				if(this.height != newHeight) {
+					this.height = newHeight;
+				}
+			}
+			
 		]]>
 	</mx:Script>
 
-	<mx:Label text="{this.data.time.toLocaleTimeString()}" id="time" styleName="statusSmall"/>
-	<mx:Text text="{this.data.status}" id="status" styleName="status" width="100%"/>
-	<mx:Label text="" id="author" styleName="statusSmall"/>
+	<mx:Text id="status" styleName="status" width="100%"/>
+	<mx:Label id="author" styleName="statusSmall"/>
 </mx:VBox>

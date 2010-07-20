@@ -45,8 +45,8 @@ package com.creatorsproject.ui
 		/** The schedule model we're displaying */
 		private var _schedule:PartyData;
 		
-		private var _widthPerHour:Number = 340;
-		private var _bandHeight:Number = 200;
+		private var _widthPerHour:Number = 280;
+		private var _bandHeight:Number = 300;
 		private var _roomBandHeight:Number = 100;
 		
 		/** Step to divide the grid by, in hours */
@@ -167,6 +167,15 @@ package com.creatorsproject.ui
 					
 					if(oldState == "disable") {
 						this.addChild(_root);
+						try {
+						this.roomToFloorAnimation();
+						} catch(error:Error) {
+							// pass;
+						}
+					}
+					
+					if(_backButton.visible) {
+						
 					}
 					
 					hideMarkers();
@@ -219,6 +228,10 @@ package com.creatorsproject.ui
 		
 		override protected function disableUI():void {
 			super.disableUI();
+			
+			if(main.instance.frontUI.contains(_backButton)) {
+				main.instance.frontUI.removeChild(_backButton);
+			}
 			
 			this.hideMarkers();
 			this.removeChild(_root);
@@ -296,7 +309,7 @@ package com.creatorsproject.ui
 			var timeline:TileBand = new TileBand(mat, _curve, 80);
 			
 			_timeBand.addChild(timeline);
-			_timeBand.y = 310;
+			_timeBand.y = 200;
 			_root.addChild(_timeBand);
 		}
 		 
@@ -454,11 +467,16 @@ package com.creatorsproject.ui
 			
 			for(var t:int = 0; t < totalTicks; t ++) {
 				var text:TextField = new TextField();
+				
+				/*
 				if((startHr + t) % 24 < 10) {
 					text.htmlText = "0" + (startHr + t) % 12 + ":00";
 				} else {
 					text.htmlText = (startHr + t) % 12 + ":00";
 				}
+				*/
+				text.htmlText = (startHr + t) % 24 + ":00";
+				
 				text.height = 70;
 				text.y = 10;
 				text.x = (t + startPush) * _widthPerHour;

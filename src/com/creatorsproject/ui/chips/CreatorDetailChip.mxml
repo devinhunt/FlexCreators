@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<mx:Canvas xmlns:mx="http://www.adobe.com/2006/mxml" width="940" height="640"
+<mx:Canvas xmlns:mx="http://www.adobe.com/2006/mxml" width="940" height="400"
 	horizontalCenter="0" verticalCenter="0" styleName="chip">
 	
 	<mx:Script>
@@ -64,9 +64,9 @@
 	</mx:Script>
 	
 	<mx:VideoDisplay id="video" 
-		width="580" height="620" top="10" right="10" backgroundColor="0x000000" autoPlay="true"/>
+		 top="10" right="10" backgroundColor="0x000000" autoPlay="true"/>
 		
-	<mx:VBox id="optionals" width="580" height="620" top="10" right="10" visible="false"
+	<mx:VBox id="optionals" width="50%" height="100%" top="10" right="10" visible="false"
 		verticalAlign="middle" horizontalAlign="right" paddingRight="20">
 		<mx:Label text="{eventTime}" styleName="bigTitle" horizontalCenter="0" />
 		<mx:Label text="{eventPlace}" styleName="mediumTitle" horizontalCenter="0" />
@@ -74,7 +74,7 @@
 	
 	<mx:Label id="artistName" styleName="bigTitle" text="{artistNameText}" top="10" left="10" />
 		
-	<mx:Canvas height="480" width="320" top="{this.artistName.height + 20}" left="10">
+	<mx:Canvas height="200" width="320" top="{this.artistName.height + 20}" left="10">
 		<mx:Text id="description" styleName="detailText" width="300" text="{descriptionText}" paddingRight="10" />
 	</mx:Canvas>
 	

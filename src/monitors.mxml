@@ -1,41 +1,39 @@
 <?xml version="1.0" encoding="utf-8"?>
 <mx:WindowedApplication xmlns:mx="http://www.adobe.com/2006/mxml" layout="absolute" width="1370" height="768" enterFrame="tick()"
-	horizontalScrollPolicy="off" verticalScrollPolicy="off" backgroundColor="0x0">
+	horizontalScrollPolicy="off" verticalScrollPolicy="off" backgroundColor="0x0" xmlns:tv="com.creatorsproject.ui.tv.*">
 
 	<mx:Style>
 	
-		/*
 		@font-face {
 			src: url("../media/fonts/NeoSansIntel.ttf");
-			font-family: NeoSansIntel;
-			font-style: normal;
-			font-weight: normal;
+			fontFamily: NeoSansEmbed;
+			fontStyle: normal;
+			fontWeight: normal;
 		}
-		*/
 		
 		.headerText {
-			font-family: "Neo Sans Intel Light";
+			font-family: "NeoSansEmbed";
 			font-size: 24;
 			color: #ffffff;
 			letter-spacing: 2;
 		}
 		
 		.statusSmall {
-			font-family: "Neo Sans Intel";
+			font-family: "NeoSansEmbed";
 			font-size: 14;
 			color: #0079bc;
 			letter-spacing: 2;
 		}
 		
 		.status {
-			font-family: "Neo Sans Intel";
+			font-family: "NeoSansEmbed";
 			font-size: 24;
 			color: #000000;
 			letter-spacing: 2;
 		}
 		
 		.statusBig {
-			font-family: "Neo Sans Intel Light";
+			font-family: "NeoSansEmbed";
 			font-size: 82;
 			color: #000000;
 			
@@ -67,6 +65,9 @@
 			public var _fillColors:Array = [ 0xED1C8F, 0xf8941d, 0x00AFDB ];
 			public var _fillCounter:int = 0;
 			
+			public var _activeImage:Image;
+			public var _deadImage:Image;
+			
 			/**
 			 * Entry Point
 			 */
@@ -75,17 +76,21 @@
 				initWindow.visible = false;
 				
 				_partyData = new PartyData();
-				_partyData.addEventListener(Event.COMPLETE, onPartyDataComplete);
+				_partyData.addEventListener("newStatus", onNewStatus);
 				_partyData.addEventListener("newMajor", onNewMajor);
+				_partyData.addEventListener("photo", onNewPhoto);
 				_partyData.statuses.addEventListener(CollectionEvent.COLLECTION_CHANGE, onStatusChange);
 				
-				_partyData.loadData();
 				_partyData.startLiveUpdating();
+				
+				// setup the image buffers
+				_activeImage = this.frontImage;
+				_deadImage = this.backImage;
+				_deadImage.visible = false;
 			}
 			
-			private function onPartyDataComplete(event:Event):void {
-				_nextEvents = _partyData.nextEvents;
-				setEventAlert();
+			private function onNewStatus(event:Event):void {
+				
 			}
 			
 			private function onNewMajor(event:Event):void {
@@ -132,6 +137,23 @@
 				}
 			}
 			
+			
+			public function onNewPhoto(event:Event):void {
+				var t:Image = _activeImage;
+				
+				_activeImage = _deadImage;
+				_deadImage = t;
+				
+				_activeImage.addEventListener(Event.COMPLETE, onImageLoaded);
+				_activeImage.source = _partyData.livePhoto.imageUrl;
+			}
+			
+			public function onImageLoaded(event:Event):void {
+				_activeImage.removeEventListener(Event.COMPLETE, onImageLoaded);
+				_activeImage.visible = true;
+				_deadImage.visible = false;
+			}
+			
 			public function setEventAlert():void {
 				if(_nextEvents.length < 1) {
 					return;
@@ -157,7 +179,10 @@
 			private function tick():void {
 				if(this.currentTime) {
 					currentTime.text = (new Date()).toLocaleTimeString();
-					
+				}
+				
+				if(stage && stage.displayState == StageDisplayState.NORMAL) {
+					this.fullScreenButton.visible = true;
 				}
 			}
 			
@@ -166,6 +191,10 @@
 					stage.displayState = StageDisplayState.FULL_SCREEN_INTERACTIVE;
 					this.showStatusBar = false;
 					this.fullScreenButton.visible = false;
+					
+					this.statusList.invalidateSize();
+					this.statusList.invalidateDisplayList();
+					
 				} else {
 					stage.displayState = StageDisplayState.NORMAL;
 				}
@@ -175,9 +204,11 @@
 	</mx:Script>
 	
 	<mx:Canvas width="70%" height="90%" bottom="0" left="0" horizontalScrollPolicy="off" verticalScrollPolicy="off">
-		<mx:Image source="{_partyData.livePhoto.imageUrl}" horizontalAlign="center" verticalAlign="center" />
 		
-		<mx:Canvas width="100%" height="100%" backgroundColor="0x000000" backgroundAlpha=".2" id="majorMatte" />
+		<mx:Image id="backImage" horizontalCenter="0" verticalCenter="0" width="100%" height="100%" />
+		<mx:Image id="frontImage" horizontalCenter="0" verticalCenter="0" width="100%" height="100%" />
+		
+		<mx:Canvas width="100%" height="100%" backgroundColor="0x000000" backgroundAlpha=".25" id="majorMatte" />
 		
 		<mx:Text id="majorStatus" color="0xffffff" styleName="statusBig"
 			width="66%" height="100%" paddingTop="20" paddingBottom="20" paddingLeft="20" paddingRight="20"/>
@@ -191,14 +222,21 @@
 	</mx:HBox>
 	
 	<mx:List id="statusList" top="0" right="0" width="30%" height="100%" 
-		backgroundColor="0x000000" borderThickness="0" columnWidth="{this.statusList.width}"
+		backgroundColor="0x000000" borderThickness="0" 
 		paddingTop="0" paddingBottom="0" paddingLeft="0" paddingRight="0" variableRowHeight="true"
-		itemRenderer="com.creatorsproject.ui.tv.StatusCard" dataProvider="{_partyData.statuses}" horizontalScrollPolicy="off" verticalScrollPolicy="off"/>
+		dataProvider="{_partyData.statuses}" horizontalScrollPolicy="off" verticalScrollPolicy="off">
+		
+		<mx:itemRenderer>
+			<mx:Component>
+				<tv:StatusCard />
+			</mx:Component>
+		</mx:itemRenderer>
+	</mx:List>
 		
 	<mx:TitleWindow horizontalCenter="0" verticalCenter="0" title="Pick your server poison" id="initWindow">
 		<mx:Button label="Run Screen from Localhost" click="init()"/>
 		<mx:Button label="Run Screen from Production Server" click="init(false)" />
 	</mx:TitleWindow>
 	
-	<mx:Button id="fullScreenButton" label="Toggle your screen" right="10" bottom = "10" click="this.toggleFullscreen()"/>
+	<mx:Button id="fullScreenButton" label="Toggle your screen" right="10" bottom = "10" click="this.toggleFullscreen()" />
 </mx:WindowedApplication>
