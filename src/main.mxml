@@ -206,11 +206,13 @@
 				tab1.setStyle("horizontalCenter", 0);
 				tab1.direction = "up";
 				tab1.text = "Schedule";
+				tab1.addEventListener(MouseEvent.CLICK, onTabClick);
 				
 				tab2 = new Tab();
 				tab2.setStyle("horizontalCenter", 0);
 				tab2.direction = "down";
 				tab2.text = "Map";
+				tab2.addEventListener(MouseEvent.CLICK, onTabClick);
 				
 				this.frontUI.addChild(tab1);
 				this.frontUI.addChild(tab2);
@@ -374,6 +376,10 @@
 					tab2.visible = false;
 					tab1.text = "LONDON LINEUP";
 				}
+			}
+			
+			private function onTabClick(event:MouseEvent):void {
+
 			}
 			
 			private function getTabLocks():Array {

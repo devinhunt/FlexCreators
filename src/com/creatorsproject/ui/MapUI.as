@@ -9,9 +9,13 @@ package com.creatorsproject.ui
 	import com.creatorsproject.ui.transitions.AnimationController;
 	import com.creatorsproject.ui.transitions.AnimationProfile;
 	
+	import flash.geom.Point;
+	import flash.utils.Dictionary;
+	
 	import mx.core.BitmapAsset;
 	import mx.effects.easing.Elastic;
 	
+	import org.papervision3d.core.proto.MaterialObject3D;
 	import org.papervision3d.events.AnimationEvent;
 	import org.papervision3d.events.InteractiveScene3DEvent;
 	import org.papervision3d.materials.BitmapMaterial;
@@ -29,6 +33,25 @@ package com.creatorsproject.ui
 	{
 		private var angle:Number = 16;
 		
+		[Embed(source="../media/img/chinamap/master.jpg")]
+		private var _masterImage:Class;
+		[Embed(source="../media/img/chinamap/map1.jpg")]
+		private var _map1Image:Class;
+		[Embed(source="../media/img/chinamap/map2.jpg")]
+		private var _map2Image:Class;
+		[Embed(source="../media/img/chinamap/map3.jpg")]
+		private var _map3Image:Class;
+		[Embed(source="../media/img/chinamap/map4.jpg")]
+		private var _map4Image:Class;
+		[Embed(source="../media/img/chinamap/map5.jpg")]
+		private var _map5Image:Class;
+		[Embed(source="../media/img/chinamap/map6.jpg")]
+		private var _map6Image:Class;
+		[Embed(source="../media/img/chinamap/map7.jpg")]
+		private var _map7Image:Class;
+		[Embed(source="../media/img/chinamap/map8.jpg")]
+		private var _map8Image:Class;
+		
 		
 		
 		private var _partyData:PartyData;
@@ -36,13 +59,17 @@ package com.creatorsproject.ui
 		private var _map1:Plane;
 		private var _map2:Plane;
 		private var _map3:Plane;
+		private var _map4:Plane;
+		private var _map5:Plane;
+		private var _map6:Plane;
+		private var _map7:Plane;
+		private var _map8:Plane;
+		private var _mapMaster:Plane;
 		
-		[Embed(source="../media/img/map1.png")]
-		private var _map1Image:Class;
-		[Embed(source="../media/img/map2.png")]
-		private var _map2Image:Class;
-		[Embed(source="../media/img/map3.png")]
-		private var _map3Image:Class;
+		private var _mapToPoint:Dictionary;
+		private var _mapToPointThreshold:Number = 1000;
+		
+		private var _maps:Array;
 		
 		private var _targetMap:DisplayObject3D;
 		
@@ -51,12 +78,12 @@ package com.creatorsproject.ui
 		
 		public function MapUI(partyData:PartyData)
 		{
-			super(fling);
+			super();
 			_partyData = partyData;
-			assembleMapUI();
-			
+			_maps = [];
 			_liveMarkers = [];
 			_markerCache = [];
+			assembleMapUI();
 			
 			this.state = "overview"; 
 		}
@@ -69,26 +96,37 @@ package com.creatorsproject.ui
 		public function assembleMapUI():void {
 			_root = new DisplayObject3D();
 			
-			var mat:BitmapMaterial = new BitmapMaterial((new _map1Image() as BitmapAsset).bitmapData, true)
-			mat.smooth = true;
+			var mat:MaterialObject3D = new BitmapMaterial((new _masterImage() as BitmapAsset).bitmapData, true);
 			mat.interactive = true;
-			_map1 = new Plane(mat, 612, 856, 4, 4);
+			mat.smooth = true;
 			
-			mat = new BitmapMaterial((new _map2Image() as BitmapAsset).bitmapData, true)
-			mat.smooth = true;
-			mat.interactive = true;
-			_map2 = new Plane(mat, 612, 856, 4, 4);
+			_mapMaster = new Plane(mat, 1000, 707, 4, 4);
+			_mapMaster.addEventListener(InteractiveScene3DEvent.OBJECT_RELEASE, this.onMapOverviewRelease);
 			
-			mat = new BitmapMaterial((new _map3Image() as BitmapAsset).bitmapData, true)
-			mat.smooth = true;
-			mat.interactive = true;
-			_map3 = new Plane(mat, 612, 856, 4, 4);
+			_map1 = new Plane(new BitmapMaterial((new _map1Image() as BitmapAsset).bitmapData, true), 1000, 707, 4, 4);
+			_map2 = new Plane(new BitmapMaterial((new _map2Image() as BitmapAsset).bitmapData, true), 1000, 707, 4, 4);
+			_map3 = new Plane(new BitmapMaterial((new _map3Image() as BitmapAsset).bitmapData, true), 1000, 707, 4, 4);
+			_map4 = new Plane(new BitmapMaterial((new _map4Image() as BitmapAsset).bitmapData, true), 1000, 707, 4, 4);
+			_map5 = new Plane(new BitmapMaterial((new _map5Image() as BitmapAsset).bitmapData, true), 1000, 707, 4, 4);
+			_map6 = new Plane(new BitmapMaterial((new _map6Image() as BitmapAsset).bitmapData, true), 1000, 707, 4, 4);
+			_map7 = new Plane(new BitmapMaterial((new _map7Image() as BitmapAsset).bitmapData, true), 1000, 707, 4, 4);
+			_map8 = new Plane(new BitmapMaterial((new _map8Image() as BitmapAsset).bitmapData, true), 1000, 707, 4, 4);
+			_maps = [_mapMaster, _map1, _map2, _map3, _map4, _map5, _map6, _map7, _map8];
+			
+			_mapToPoint = new Dictionary();
+			_mapToPoint[_map3] = new Point(0, 0);
 			
 			resetMaps();
 			
+			_root.addChild(_mapMaster);
 			_root.addChild(_map1);
 			_root.addChild(_map2);
 			_root.addChild(_map3);
+			_root.addChild(_map4);
+			_root.addChild(_map5);
+			_root.addChild(_map6);
+			_root.addChild(_map7);
+			_root.addChild(_map8);
 			
 			this.addChild(_root);
 		}
@@ -98,22 +136,16 @@ package com.creatorsproject.ui
 		 * 
 		 */		
 		public function resetMaps():void {
-			var rad:Number = -2300;
+			var radius:Number = -2400;
+			var angleStep:Number = 2 * Math.PI / _maps.length;
 			
-			_map1.x = rad * Math.sin(angle * Math.PI / 180);
-			_map1.z = rad * Math.cos(angle * Math.PI / 180);
-			_map1.rotationY = angle;
-			_map1.addEventListener(InteractiveScene3DEvent.OBJECT_RELEASE, this.onMapOverviewRelease);
-			
-			_map2.x = rad * Math.sin(0 * Math.PI / 180);
-			_map2.z = rad * Math.cos(0 * Math.PI / 180);
-			_map2.rotationY = 0;
-			_map2.addEventListener(InteractiveScene3DEvent.OBJECT_RELEASE, this.onMapOverviewRelease);
-			
-			_map3.x = rad * Math.sin(-angle * Math.PI / 180);
-			_map3.z = rad * Math.cos(-angle * Math.PI / 180);
-			_map3.rotationY = -angle;
-			_map3.addEventListener(InteractiveScene3DEvent.OBJECT_RELEASE, this.onMapOverviewRelease);
+			for(var i:int = 0; i < _maps.length; i ++) {
+				var d:DisplayObject3D = _maps[i];
+				
+				d.x = radius * Math.sin(angleStep * i);
+				d.z = radius * Math.cos(angleStep * i);
+				d.rotationY = angleStep * i * 180 / Math.PI;
+			}
 			
 			if(_targetMap) {
 				var ac:AnimationController = new AnimationController(300);
@@ -139,12 +171,12 @@ package com.creatorsproject.ui
 			// and update the state
 			switch(_state) {
 				case "overview":
-					var maxDelta:Number = 20;	
+					var maxDelta:Number = 20;
+					
 					if(fling.isSwiping) {
-						_root.rotationY -= (fling.velocity.x / 10) * Math.max(0, (maxDelta - Math.abs(_root.rotationY)) / maxDelta);
-					} else {
-						_root.rotationY -= _root.rotationY / 5;
+						_root.rotationY -= fling.velocity.x / 10;
 					}
+
 					break;
 				case "focus":
 					break;
@@ -164,7 +196,6 @@ package com.creatorsproject.ui
 			
 			switch(_state) {
 				case "overview":
-				
 					if(oldState == "disable") {
 						this.addChild(_root);
 					}
@@ -203,37 +234,45 @@ package com.creatorsproject.ui
 		
 		private function onMapOverviewRelease(event:InteractiveScene3DEvent):void {
 			if(TouchController.me.state == "touching" && _state == "overview") {
-				_targetMap = event.target as DisplayObject3D;
-				this.state = "focus";
+				var referingMap:DisplayObject3D = getMapClick(event.x, event.y);
+				
+				if(referingMap) {
+					_targetMap = referingMap;
+					this.state = "focus";
+				}
+				
+				//_targetMap = event.target as DisplayObject3D;
+				//this.state = "focus";
 			}
+		}
+		
+		private function getMapClick(x:Number, y:Number):DisplayObject3D {
+			var click:Point = new Point(x, y);
+			for(var map:Object in _mapToPoint) {
+				var test:Point = _mapToPoint[map];
+				if((click.x - test.x) * (click.x - test.x) + (click.y - test.y) * (click.y - test.y) <= _mapToPointThreshold){
+					return map as DisplayObject3D;
+				}
+			}
+			return null;
 		}
 		
 		// ________________________________________________ Focus Loading and Updating
 		
 		private function centerMap():void {
-			var ac:AnimationController = new AnimationController(300);
+			var ac:AnimationController = new AnimationController(1000);
 			ac.addEventListener(AnimationEvent.COMPLETE, onTransitionComplete)
 			ac.func = Elastic.easeOut;
 
 			// the map
 			var ap:AnimationProfile = new AnimationProfile(_targetMap);
-			ap.endScale = 1.6;
+			ap.endScale = 1.2;
 			ac.addAnimationProfile(ap);
 			
 			// the screen
 			ap = new AnimationProfile(_root); 
 			ac.addAnimationProfile(ap);
-			switch(_targetMap) {
-				case _map1:
-					ap.endRotationY = -angle;
-					break;
-				case _map2:
-					ap.endRotationY = 0;
-					break;
-				case _map3:
-					ap.endRotationY = angle;
-					break;
-			}
+			ap.endRotationY = - _targetMap.rotationY;
 			
 			ac.start();
 		}
