@@ -53,7 +53,7 @@
 				if(value) {
 					_eventData = value;
 					eventTime = _eventData.dateString;
-					eventPlace = _eventData.roomName;
+					eventPlace = _eventData.roomName + ", " + _eventData.floorName;
 				}
 			}
 			
