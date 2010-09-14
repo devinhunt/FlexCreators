@@ -290,6 +290,15 @@ package com.creatorsproject.ui
 				}
 				
 				this.state = "focus";
+			} else if(_state == "focus" && _targetMap == _mapMaster) {
+				referingMap = getMapClick(event.x, event.y);
+				
+				if(referingMap) {
+					hideMarkers();
+					resetMaps();
+					_targetMap = referingMap as MapPlane;
+					this.state = "focus";
+				}
 			}
 		}
 		
@@ -338,12 +347,11 @@ package com.creatorsproject.ui
 			var events:Array = _partyData.nextEvents;
 			
 			var pushx:Number = main.instance.frontUI.width / 2 - 260;
-			var pushy:Number = 0;
+			var pushy:Number = main.instance.frontUI.height / 2;
 			
 			for each(var ev:PartyEvent in events) {
 				var room:EventRoom = _partyData.getRoomFromId(ev.roomId);
 				if(room && room.floorId == floor.id) {
-					trace(room.name);
 					var marker:MapMarker = this.getMarker(ev);
 					marker.x = room.x / 1.22 + pushx;
 					marker.y = room.y / 1.22 + pushy;

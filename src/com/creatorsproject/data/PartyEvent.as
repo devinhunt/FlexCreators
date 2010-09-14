@@ -32,7 +32,7 @@ package com.creatorsproject.data
 		/** ID of the creator for this event */
 		public var creatorId:String;
 		
-		public var chipUrl:String;
+		public var assetKey:String;
 		
 		public function PartyEvent(raw:Object)
 		{
@@ -43,6 +43,7 @@ package com.creatorsproject.data
 			this.startTime = PartyData.dateFromJSON(raw.fields.start);
 			this.endTime = PartyData.dateFromJSON(raw.fields.end);
 			this.description = raw.fields.description;
+			this.assetKey = raw.fields.icon;
 		}
 		
 		//_________________________________________________ Getter and Setters

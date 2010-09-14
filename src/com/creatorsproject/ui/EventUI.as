@@ -597,7 +597,7 @@ package com.creatorsproject.ui
 			while(_liveMarkers.length > 0) {
 				var marker:DisplayObject = _liveMarkers.pop();
 				if(main.instance.frontUI.contains(marker)) {
-					main.instance.frontUI.removeChild(_liveMarkers.pop());
+					main.instance.frontUI.removeChild(marker);
 				}
 			}
 		}
