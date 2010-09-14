@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<mx:Canvas xmlns:mx="http://www.adobe.com/2006/mxml" width="200" height="40">
+<mx:Canvas xmlns:mx="http://www.adobe.com/2006/mxml" width="200" height="40" mouseChildren="false">
 
 	<mx:Script>
 		<![CDATA[
@@ -11,7 +11,7 @@
 				var g:Graphics = this.graphics;
 				
 				
-				g.beginFill(0xdddddd);
+				g.beginFill(0x333333);
 				g.drawRect(0, 0, this.width, this.height);
 				if(value == "up") {
 					g.moveTo(0, 0);

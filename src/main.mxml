@@ -317,21 +317,7 @@
 				
 				if(event.type == GestureEvent.SWIPE_END) {
 					this.addEventListener(Event.ENTER_FRAME, onResetCamera);
-					
-					switch(_camState) {
-						case "map":
-							_creatorUI.state = "disable";
-							_eventUI.state = "disable";
-							break;
-						case "creator":
-							_eventUI.state = "disable";
-							_mapUI.state = "disable";
-							break;
-						case "event":
-							_creatorUI.state = "disable";
-							_mapUI.state = "disable";
-							break;
-					}
+					cleanInterface();
 				}
 				
 			}
@@ -344,6 +330,26 @@
 				} else {
 					var c:Number = _camera.rotationX + (_camTarget - _camera.rotationX) / 5;
 					this.setCamLocation(c);
+				}
+			}
+			
+			private function cleanInterface():void {
+				switch(_camState) {
+					case "map":
+						//_mapUI.state = "overview";
+						_creatorUI.state = "disable";
+						_eventUI.state = "disable";
+						break;
+					case "creator":
+						//_creatorUI.state = "creators";
+						_eventUI.state = "disable";
+						_mapUI.state = "disable";
+						break;
+					case "event":
+						//_eventUI.state = "floors";
+						_creatorUI.state = "disable";
+						_mapUI.state = "disable";
+						break;
 				}
 			}
 			
@@ -383,7 +389,43 @@
 			}
 			
 			private function onTabClick(event:MouseEvent):void {
-
+				var target:Tab = event.target as Tab;
+				
+				if(_camState == "event") {
+					if(target == tab2) {
+						_camTarget = 0;
+						_camState = "creator";
+						_creatorUI.state = "creators"
+						this.addEventListener(Event.ENTER_FRAME, onResetCamera);
+						this.setTabStrings();
+						cleanInterface();
+					}
+				} else if(_camState == "creator") {
+					if(target == tab1) {
+						_camTarget = 14;
+						_camState = "event";
+						_eventUI.state = "floors"
+						this.addEventListener(Event.ENTER_FRAME, onResetCamera);
+						this.setTabStrings();
+						cleanInterface();
+					} else if(target == tab2) {
+						_camTarget = -14;
+						_camState = "map";
+						_mapUI.state = "overview";
+						this.addEventListener(Event.ENTER_FRAME, onResetCamera);
+						this.setTabStrings();
+						cleanInterface();
+					}
+				} else {
+					if(target == tab1) {
+						_camTarget = 0;
+						_camState = "creator";
+						_creatorUI.state = "creators"
+						this.addEventListener(Event.ENTER_FRAME, onResetCamera);
+						this.setTabStrings();
+						cleanInterface();
+					}
+				}
 			}
 			
 			private function getTabLocks():Array {
