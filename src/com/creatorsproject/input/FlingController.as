@@ -29,6 +29,7 @@ package com.creatorsproject.input
 		public function FlingController()
 		{
 			setupFling();
+			velocity = new Point();
 		}
 		
 		protected function setupFling():void {

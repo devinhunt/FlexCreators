@@ -7,6 +7,7 @@ package com.creatorsproject.data
 		public var location:String;
 		public var synopsis:String;
 		public var iconKey:String;
+		public var videoKey:String;
 		
 		public function Creator(raw:Object = null)
 		{
@@ -15,6 +16,7 @@ package com.creatorsproject.data
 			this.location = raw.fields.location;
 			this.synopsis = raw.fields.synopsis;
 			this.iconKey = raw.fields.icon;
+			this.videoKey = raw.fields.video_key;
 		}
 	}
 }

@@ -12,6 +12,7 @@ package com.creatorsproject.ui
 	import com.creatorsproject.ui.transitions.AnimationController;
 	import com.creatorsproject.ui.transitions.AnimationProfile;
 	
+	import flash.display.DisplayObject;
 	import flash.display.Graphics;
 	import flash.display.MovieClip;
 	import flash.events.Event;
@@ -594,7 +595,10 @@ package com.creatorsproject.ui
 		
 		private function hideMarkers():void {
 			while(_liveMarkers.length > 0) {
-				main.instance.frontUI.removeChild(_liveMarkers.pop());
+				var marker:DisplayObject = _liveMarkers.pop();
+				if(main.instance.frontUI.contains(marker)) {
+					main.instance.frontUI.removeChild(_liveMarkers.pop());
+				}
 			}
 		}
 		

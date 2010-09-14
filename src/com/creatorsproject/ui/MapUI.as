@@ -9,9 +9,11 @@ package com.creatorsproject.ui
 	import com.creatorsproject.ui.transitions.AnimationController;
 	import com.creatorsproject.ui.transitions.AnimationProfile;
 	
+	import flash.events.MouseEvent;
 	import flash.geom.Point;
 	import flash.utils.Dictionary;
 	
+	import mx.controls.Button;
 	import mx.core.BitmapAsset;
 	import mx.effects.easing.Elastic;
 	
@@ -20,7 +22,6 @@ package com.creatorsproject.ui
 	import org.papervision3d.events.InteractiveScene3DEvent;
 	import org.papervision3d.materials.BitmapMaterial;
 	import org.papervision3d.objects.DisplayObject3D;
-	import org.papervision3d.objects.primitives.Plane;
 	
 	/**
 	 * This is the UI controller and container for the map display for the touchscreens. It basically 
@@ -53,25 +54,29 @@ package com.creatorsproject.ui
 		private var _map8Image:Class;
 		
 		
+		private var closeButton:Button;
 		
 		private var _partyData:PartyData;
 		private var _root:DisplayObject3D;
-		private var _map1:Plane;
-		private var _map2:Plane;
-		private var _map3:Plane;
-		private var _map4:Plane;
-		private var _map5:Plane;
-		private var _map6:Plane;
-		private var _map7:Plane;
-		private var _map8:Plane;
-		private var _mapMaster:Plane;
+		private var _map1:MapPlane;
+		private var _map2:MapPlane;
+		private var _map3:MapPlane;
+		private var _map4:MapPlane;
+		private var _map5:MapPlane;
+		private var _map6:MapPlane;
+		private var _map7:MapPlane;
+		private var _map8:MapPlane;
+		private var _mapMaster:MapPlane;
+		
+		private var _minTheta:Number = 0;
+		private var _maxTheta:Number = 10 / 8 * 180;
 		
 		private var _mapToPoint:Dictionary;
 		private var _mapToPointThreshold:Number = 1000;
 		
 		private var _maps:Array;
 		
-		private var _targetMap:DisplayObject3D;
+		private var _targetMap:MapPlane;
 		
 		private var _liveMarkers:Array;
 		private var _markerCache:Array;
@@ -100,21 +105,33 @@ package com.creatorsproject.ui
 			mat.interactive = true;
 			mat.smooth = true;
 			
-			_mapMaster = new Plane(mat, 1000, 707, 4, 4);
-			_mapMaster.addEventListener(InteractiveScene3DEvent.OBJECT_RELEASE, this.onMapOverviewRelease);
+			_mapMaster = new MapPlane(onMapOverviewRelease, mat, 1000, 707, 4, 4);
+
 			
-			_map1 = new Plane(new BitmapMaterial((new _map1Image() as BitmapAsset).bitmapData, true), 1000, 707, 4, 4);
-			_map2 = new Plane(new BitmapMaterial((new _map2Image() as BitmapAsset).bitmapData, true), 1000, 707, 4, 4);
-			_map3 = new Plane(new BitmapMaterial((new _map3Image() as BitmapAsset).bitmapData, true), 1000, 707, 4, 4);
-			_map4 = new Plane(new BitmapMaterial((new _map4Image() as BitmapAsset).bitmapData, true), 1000, 707, 4, 4);
-			_map5 = new Plane(new BitmapMaterial((new _map5Image() as BitmapAsset).bitmapData, true), 1000, 707, 4, 4);
-			_map6 = new Plane(new BitmapMaterial((new _map6Image() as BitmapAsset).bitmapData, true), 1000, 707, 4, 4);
-			_map7 = new Plane(new BitmapMaterial((new _map7Image() as BitmapAsset).bitmapData, true), 1000, 707, 4, 4);
-			_map8 = new Plane(new BitmapMaterial((new _map8Image() as BitmapAsset).bitmapData, true), 1000, 707, 4, 4);
+			_map1 = new MapPlane(onMapOverviewRelease, new BitmapMaterial((new _map1Image() as BitmapAsset).bitmapData, true), 1000, 707, 4, 4);
+			_map2 = new MapPlane(onMapOverviewRelease, new BitmapMaterial((new _map2Image() as BitmapAsset).bitmapData, true), 1000, 707, 4, 4);
+			_map3 = new MapPlane(onMapOverviewRelease, new BitmapMaterial((new _map3Image() as BitmapAsset).bitmapData, true), 1000, 707, 4, 4);
+			_map4 = new MapPlane(onMapOverviewRelease, new BitmapMaterial((new _map4Image() as BitmapAsset).bitmapData, true), 1000, 707, 4, 4);
+			_map5 = new MapPlane(onMapOverviewRelease, new BitmapMaterial((new _map5Image() as BitmapAsset).bitmapData, true), 1000, 707, 4, 4);
+			_map6 = new MapPlane(onMapOverviewRelease, new BitmapMaterial((new _map6Image() as BitmapAsset).bitmapData, true), 1000, 707, 4, 4);
+			_map7 = new MapPlane(onMapOverviewRelease, new BitmapMaterial((new _map7Image() as BitmapAsset).bitmapData, true), 1000, 707, 4, 4);
+			_map8 = new MapPlane(onMapOverviewRelease, new BitmapMaterial((new _map8Image() as BitmapAsset).bitmapData, true), 1000, 707, 4, 4);
+			
 			_maps = [_mapMaster, _map1, _map2, _map3, _map4, _map5, _map6, _map7, _map8];
 			
-			_mapToPoint = new Dictionary();
-			_mapToPoint[_map3] = new Point(0, 0);
+			for each(var map:MapPlane in _maps) {
+				map.scale = .8;
+			}
+			
+			_map1.masterLocation = new Point(0, 0);
+			_map1.order = 1;
+			//_map2.masterLocation = new Point(0, 0);
+			//_map3.masterLocation = new Point(0, 0);
+			//_map4.masterLocation = new Point(0, 0);
+			//_map5.masterLocation = new Point(0, 0);
+			//_map6.masterLocation = new Point(0, 0);
+			//_map7.masterLocation = new Point(0, 0);
+			//_map8.masterLocation = new Point(0, 0);
 			
 			resetMaps();
 			
@@ -129,6 +146,16 @@ package com.creatorsproject.ui
 			_root.addChild(_map8);
 			
 			this.addChild(_root);
+			
+			// close button
+			closeButton = new Button();
+			closeButton.width = 80;
+			closeButton.height = 80;
+			closeButton.styleName = "touchButton";
+			closeButton.setStyle("horizontalCenter", 468);
+			closeButton.setStyle("verticalCenter", -254);
+			closeButton.label = "X";
+			closeButton.addEventListener(MouseEvent.CLICK, onCloseClick);
 		}
 		
 		/**
@@ -136,15 +163,15 @@ package com.creatorsproject.ui
 		 * 
 		 */		
 		public function resetMaps():void {
-			var radius:Number = -2400;
-			var angleStep:Number = 2 * Math.PI / _maps.length;
+			var radius:Number = -2500;
+			var angleStep:Number = (_maxTheta - _minTheta) / _maps.length;
 			
 			for(var i:int = 0; i < _maps.length; i ++) {
 				var d:DisplayObject3D = _maps[i];
 				
-				d.x = radius * Math.sin(angleStep * i);
-				d.z = radius * Math.cos(angleStep * i);
-				d.rotationY = angleStep * i * 180 / Math.PI;
+				d.x = radius * Math.sin(- angleStep * i * Math.PI / 180);
+				d.z = radius * Math.cos(- angleStep * i * Math.PI / 180);
+				d.rotationY = - angleStep * i;
 			}
 			
 			if(_targetMap) {
@@ -154,7 +181,7 @@ package com.creatorsproject.ui
 	
 				// the map
 				var ap:AnimationProfile = new AnimationProfile(_targetMap);
-				ap.endScale = 1;
+				ap.endScale = .8;
 				ac.addAnimationProfile(ap);
 				ac.start();
 			}
@@ -173,8 +200,14 @@ package com.creatorsproject.ui
 				case "overview":
 					var maxDelta:Number = 20;
 					
-					if(fling.isSwiping) {
-						_root.rotationY -= fling.velocity.x / 10;
+					if(fling.isFlinging && _root.rotationY >= _minTheta && _root.rotationY <= _maxTheta)  {
+						_root.rotationY += - fling.velocity.x / 10;
+					} else {
+						if(_root.rotationY < _minTheta) {
+							_root.rotationY += (_minTheta - _root.rotationY) / 2 - fling.velocity.x / 10;
+						} else if(_root.rotationY > _maxTheta) {
+							_root.rotationY += (_maxTheta - _root.rotationY) / 2 - fling.velocity.x / 10;
+						}
 					}
 
 					break;
@@ -201,11 +234,16 @@ package com.creatorsproject.ui
 					}
 				
 					if(oldState == "focus" || oldState == "disable") {
+						if(main.instance.frontUI.contains(this.closeButton)) {
+							main.instance.frontUI.removeChild(this.closeButton);
+						}
+						
 						hideMarkers();
 						resetMaps();
 					}
 					break;
 				case "focus":
+					main.instance.frontUI.addChild(this.closeButton);
 					centerMap();
 					updateMapFocus();
 					break;
@@ -219,6 +257,9 @@ package com.creatorsproject.ui
 		override protected function disableUI():void {
 			super.disableUI();
 			
+			if(main.instance.frontUI.contains(this.closeButton)) {
+				main.instance.frontUI.removeChild(this.closeButton);
+			}
 			this.hideMarkers();
 			this.removeChild(_root);
 		}
@@ -232,25 +273,31 @@ package com.creatorsproject.ui
 			}
 		}
 		
+		private function onCloseClick(event:MouseEvent):void {
+			if(_state == "focus") {
+				this.state = "overview";
+			}
+		}
+		
 		private function onMapOverviewRelease(event:InteractiveScene3DEvent):void {
 			if(TouchController.me.state == "touching" && _state == "overview") {
 				var referingMap:DisplayObject3D = getMapClick(event.x, event.y);
 				
 				if(referingMap) {
-					_targetMap = referingMap;
-					this.state = "focus";
+					_targetMap = referingMap as MapPlane;
+				} else {
+					_targetMap = event.target as MapPlane;
 				}
 				
-				//_targetMap = event.target as DisplayObject3D;
-				//this.state = "focus";
+				this.state = "focus";
 			}
 		}
 		
 		private function getMapClick(x:Number, y:Number):DisplayObject3D {
 			var click:Point = new Point(x, y);
-			for(var map:Object in _mapToPoint) {
-				var test:Point = _mapToPoint[map];
-				if((click.x - test.x) * (click.x - test.x) + (click.y - test.y) * (click.y - test.y) <= _mapToPointThreshold){
+			for each(var map:MapPlane in _maps) {
+				var test:Point = map.masterLocation;
+				if(test && (click.x - test.x) * (click.x - test.x) + (click.y - test.y) * (click.y - test.y) <= _mapToPointThreshold){
 					return map as DisplayObject3D;
 				}
 			}
@@ -266,7 +313,7 @@ package com.creatorsproject.ui
 
 			// the map
 			var ap:AnimationProfile = new AnimationProfile(_targetMap);
-			ap.endScale = 1.2;
+			ap.endScale = 1;
 			ac.addAnimationProfile(ap);
 			
 			// the screen
@@ -282,12 +329,10 @@ package com.creatorsproject.ui
 		}
 		
 		private function updateMapFocus():void {
-			var floor:EventFloor;
+			var floor:EventFloor = _partyData.getFloorFromOrder(_targetMap.order);
 			
-			switch(_targetMap) {
-				case _map1: floor = dirtyGetFloor("First Floor"); break;
-				case _map2: floor = dirtyGetFloor("Second Floor"); break;
-				case _map3: floor = dirtyGetFloor("Eighth Floor"); break;
+			if(! floor) {
+				return;
 			}
 			
 			var events:Array = _partyData.nextEvents;

@@ -465,6 +465,15 @@ package com.creatorsproject.data
 			return null;
 		}
 		
+		public function getFloorFromOrder(order:int):EventFloor {
+			for each(var floor:EventFloor in _floors) {
+				if(floor.order == order) {
+					return floor;
+				}
+			}
+			return null;
+		}
+		
 		public function getRoomFromId(roomId:String):EventRoom {
 			for each(var room:EventRoom in _rooms) {
 				if(room.id == roomId) {

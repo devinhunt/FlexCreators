@@ -7,11 +7,14 @@
 		.chip {
 			horizontal-center: 0;
 			vertical-center: 0;
+		}
+		
+		.chipBody {
 			background-color: #000000;
 			paddingTop: 40;
 			paddingBottom: 40;
-			paddingLeft: 20;
-			paddingRight: 20;
+			paddingLeft: 40;
+			paddingRight: 40;
 		}
 		
 		.bigTitle {
@@ -41,8 +44,8 @@
 		
 		.touchButton {
 			font-family: "Neo Sans Intel";
-			paddingLeft: 20;
-			paddingRight: 20;
+			paddingLeft: 10;
+			paddingRight: 10;
 			paddingTop: 10;
 			paddingBottom: 10;
 			letterSpacing: 3;
@@ -52,9 +55,10 @@
 			color: #aaaaaa;
 			textRollOverColor: #0b333c;
 			textSelectedColor: #000033;
-			borderColor: #aab3b3;
+			borderColor: #000000;
 			fontSize: 14;
 			fontWeight: normal;
+			cornerRadius: 0;
 		}
 		
 		.headerText {
@@ -141,10 +145,10 @@
 			// ____________________________________________ Application Setup
 			
 			public function init(isLocal:Boolean = true):void {
-				//DataConstants.videoDir = new File();
-				//DataConstants.videoDir.browseForDirectory("Where are the video files, blood");
+				DataConstants.videoDir = new File();
+				DataConstants.videoDir.browseForDirectory("Where are the video files?");
 				
-				DataConstants.isLocal = isLocal
+				DataConstants.isLocal = isLocal;
 				initWindow.visible = false;
 				initSever();
 				//animationTest();

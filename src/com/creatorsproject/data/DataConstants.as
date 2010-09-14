@@ -9,10 +9,10 @@ package com.creatorsproject.data
 		public static var URL_SERVER:String = "http://localhost:8000/";
 		
 		public static const URL_LOCAL:String = "http://localhost:8000/";
-		public static const URL_LIVE:String = "http://ec2-184-73-108-19.compute-1.amazonaws.com/";
+		public static const URL_LIVE:String = "http://ec2-175-41-172-10.ap-southeast-1.compute.amazonaws.com/";
 		
 		public static const URL_LOCAL_IMG:String = "http://localhost:8000/static/";
-		public static const URL_LIVE_IMG:String = "http://ec2-184-73-108-19.compute-1.amazonaws.com/static/";
+		public static const URL_LIVE_IMG:String = "http://ec2-175-41-172-10.ap-southeast-1.compute.amazonaws.com/static/";
 		
 		public static const URL_SCHEDULE:String = "api/events/normal/";
 		public static const URL_CREATOR:String = "api/creators/";
@@ -37,5 +37,15 @@ package com.creatorsproject.data
 												   "Eighth Floor" : 0xffffff }
 												   
 		public static var videoDir:File;
+		
+		/*_________________________________________________ Videos used in this bitch! */
+		
+		//[Embed(source="../../../../media/videos/test_vice.flv", mimeType="application/octet-stream")]
+		//public static var testFlv:Class;
+		
+		//[Embed(source="../../../../media/videos/test.mp4", mimeType="application/octet-stream")]
+		//public static var testMpg:Class;
+		
+		
 	}
 }

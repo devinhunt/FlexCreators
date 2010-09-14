@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
-<mx:Canvas xmlns:mx="http://www.adobe.com/2006/mxml" width="940" height="400"
+<mx:Canvas xmlns:mx="http://www.adobe.com/2006/mxml" width="800" height="600"
 	horizontalCenter="0" verticalCenter="0" styleName="chip">
 	
 	<mx:Script>
 		<![CDATA[
+			import mx.controls.VideoDisplay;
 			import com.creatorsproject.data.PartyEvent;
 			import com.creatorsproject.data.PartyVideo;
 			import com.creatorsproject.data.DataConstants;
@@ -12,7 +13,6 @@
 			import mx.controls.videoClasses.VideoPlayer;
 
 			private var _creatorData:Creator;
-			private var _partyVideo:PartyVideo;
 			private var _eventData:PartyEvent;
 			private var _video:Video;
 			private var ns:NetStream;
@@ -26,11 +26,27 @@
 			[Bindable]
 			private var descriptionText:String;
 			
+			public var video:VideoDisplay;
+			
 			public function set creatorData(value:Creator):void {
 				_creatorData = value;
 				
 				artistNameText = _creatorData.name;
 				descriptionText = _creatorData.synopsis;
+				
+				if(video) {
+					this.videoContainer.removeAllChildren();
+					video.close();
+					video.source = null;
+					video = null;
+				}
+				
+				video = new VideoDisplay();
+				video.width = 640;
+				video.height = 360;
+				this.videoContainer.addChild(video);
+				video.source = DataConstants.videoDir.url + File.separator + _creatorData.videoKey;
+				video.validateNow();
 			}
 			
 			public function set eventData(value:PartyEvent):void {
@@ -38,14 +54,13 @@
 					_eventData = value;
 					eventTime = _eventData.dateString;
 					eventPlace = _eventData.roomName;
-					this.optionals.visible = true;
 				}
 			}
 			
-			public function set partyVideo(value:PartyVideo):void {
-				_partyVideo = value;
-				video.visible = true;
-				this.video.source = DataConstants.videoDir.url + File.separator + _partyVideo.fileName;
+			public function playVideo():void {
+				if(video && !video.playing) {
+					video.play();
+				}
 			}
 			
 			public function haltVideo():void {
@@ -58,25 +73,33 @@
 					video.source = "";
 				}
 				
-				this.optionals.visible = false;
+			}
+			
+			public function close():void {
+				this.videoContainer.removeAllChildren();
+				video.close();
+				video.source = null;
+				video = null;
+				this.dispatchEvent(new Event(Event.CLOSE));
 			}
 		]]>
 	</mx:Script>
 	
-	<mx:VideoDisplay id="video" 
-		 top="10" right="10" backgroundColor="0x000000" autoPlay="true"/>
-		
-	<mx:VBox id="optionals" width="50%" height="100%" top="10" right="10" visible="false"
-		verticalAlign="middle" horizontalAlign="right" paddingRight="20">
-		<mx:Label text="{eventTime}" styleName="bigTitle" horizontalCenter="0" />
-		<mx:Label text="{eventPlace}" styleName="mediumTitle" horizontalCenter="0" />
-	</mx:VBox>
+	<mx:Canvas id="body" width="720" height="600" horizontalScrollPolicy="off" verticalScrollPolicy="off" styleName="chipBody">
 	
-	<mx:Label id="artistName" styleName="bigTitle" text="{artistNameText}" top="10" left="10" />
+		<mx:Canvas id="videoContainer" width="640" height="360" top="40" left="40">
+			
+		</mx:Canvas>
 		
-	<mx:Canvas height="200" width="320" top="{this.artistName.height + 20}" left="10">
-		<mx:Text id="description" styleName="detailText" width="300" text="{descriptionText}" paddingRight="10" />
+		
+		<mx:VBox top="400" left="40" verticalGap="0">
+			<mx:Label text="{artistNameText}" styleName="mediumTitle" color="#ffffff"/>
+			<mx:Label text="{eventTime}" styleName="smallTitle" />
+			<mx:Label text="{eventPlace}" styleName="smallTitle" />
+		</mx:VBox>
+		
+		
 	</mx:Canvas>
 	
-	<mx:Button label="CLOSE" click="this.dispatchEvent(new Event(Event.CLOSE))" styleName="touchButton" horizontalCenter="0" bottom="10"/>
+	<mx:Button label="X" click="close()" styleName="touchButton" right="0" top="0" width="80" height="80"/>
 </mx:Canvas>
