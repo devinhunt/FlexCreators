@@ -368,8 +368,8 @@ package com.creatorsproject.ui
 				var room:EventRoom = _partyData.getRoomFromId(ev.roomId);
 				if(room && room.floorId == floor.id) {
 					var marker:MapMarker = this.getMarker(ev);
-					marker.x = pushx + (room.x + room.width / 2) * .8;
-					marker.y = pushy + (room.y + room.height / 2) * .8;
+					marker.x = pushx + (room.x + room.width * Math.random()) * .8;
+					marker.y = pushy + (room.y + room.height * Math.random()) * .8;
 					main.instance.frontUI.addChild(marker)
 					_liveMarkers.push(marker);
 				}

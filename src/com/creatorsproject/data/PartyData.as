@@ -447,7 +447,7 @@ package com.creatorsproject.data
 		}
 		
 		public function get nextEvents():Array {
-			var currentDate:Date = new Date(2010, 9, 17, 20, 12, 00);
+			var currentDate:Date = new Date(); //2010, 9, 17, 20, 12, 00);
 			var events:Array = []
 			var threshold:Number = .5;			// in hours
 			

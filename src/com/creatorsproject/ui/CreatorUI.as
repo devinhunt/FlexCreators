@@ -67,7 +67,7 @@ package com.creatorsproject.ui
 		 */		
 		override public function set state(value:String):void {
 			var oldState:String = _state;
-			_state = value;
+			super.state = value;
 			
 			trace("Creator UI :: Changing to state " + value);
 			
@@ -102,6 +102,11 @@ package com.creatorsproject.ui
 		
 		override protected function disableUI():void {
 			super.disableUI();
+			
+			if(main.instance.frontUI.contains(_detailChip)) {
+				_detailChip.haltVideo();
+				main.instance.frontUI.removeChild(_detailChip);
+			}
 			
 			this.removeChild(_root);
 		}
