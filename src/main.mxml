@@ -384,7 +384,7 @@
 				if(_camState == "event") {
 					tab1.visible = false;
 					tab2.visible = true;
-					tab2.text = "LONDON LINEUP";					
+					tab2.text = "北京艺术家";					
 				} else if(_camState == "creator") {
 					tab1.visible = true;
 					tab2.visible = true;
@@ -393,7 +393,7 @@
 				} else {
 					tab1.visible = true;
 					tab2.visible = false;
-					tab1.text = "LONDON LINEUP";
+					tab1.text = "北京艺术家";
 				}
 			}
 			

@@ -345,7 +345,7 @@ package com.creatorsproject.ui
 			var spacing:Number = _roomBandHeight + 5;
 			
 			for(var r:int = 0; r < floor.rooms.length; r ++) {
-				var band:TileBand = this.getRoomBand(floor.rooms[r], DataConstants.roomColors[floor.name], DataConstants.floorColors[floor.name]);
+				var band:TileBand = this.getRoomBand(floor.rooms[r], DataConstants.roomColors[floor.order], DataConstants.floorColors[floor.order]);
 				band.y = (spacing * (floor.rooms.length - 1) / 2) - spacing * r - (spacing / 2);
 				_roomBands.addChild(band);
 			}
@@ -391,8 +391,8 @@ package com.creatorsproject.ui
 			var heightPerRoom:Number = texHeight / floor.rooms.length;
 			
 			
-			var floorColor:uint = DataConstants.floorColors[floor.name];
-			var roomColor:uint = DataConstants.roomColors[floor.name];
+			var floorColor:uint = DataConstants.floorColors[floor.order];
+			var roomColor:uint = DataConstants.roomColors[floor.order];
 			
 			tex.graphics.beginFill(floorColor, .3);
 			tex.graphics.drawRect(0, 0, _schedule.totalHours * _widthPerHour, texHeight);
