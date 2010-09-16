@@ -4,6 +4,8 @@
 	
 	<mx:Script>
 		<![CDATA[
+			import mx.controls.TextArea;
+			import mx.controls.Text;
 			import mx.controls.VideoDisplay;
 			import com.creatorsproject.data.PartyEvent;
 			import com.creatorsproject.data.PartyVideo;
@@ -27,26 +29,42 @@
 			private var descriptionText:String;
 			
 			public var video:VideoDisplay;
+			public var text:TextArea;
 			
 			public function set creatorData(value:Creator):void {
 				_creatorData = value;
 				
 				artistNameText = _creatorData.name;
 				descriptionText = _creatorData.synopsis;
+				this.videoContainer.removeAllChildren();
 				
 				if(video) {
-					this.videoContainer.removeAllChildren();
 					video.close();
 					video.source = null;
 					video = null;
 				}
 				
-				video = new VideoDisplay();
-				video.width = 640;
-				video.height = 360;
-				this.videoContainer.addChild(video);
-				video.source = DataConstants.videoDir.url + File.separator + _creatorData.videoKey;
-				video.validateNow();
+				if(_creatorData.videoKey == "") {
+					// use description
+					if(! text) {
+						text = new TextArea();
+					}
+					
+					text.htmlText = _creatorData.synopsis;
+					text.width = this.videoContainer.width;
+					text.height = this.videoContainer.height;
+					text.styleName = "creatorText";
+					text.editable = false;
+					this.videoContainer.addChild(text);
+					
+				} else {
+					video = new VideoDisplay();
+					video.width = 640;
+					video.height = 360;
+					this.videoContainer.addChild(video);
+					video.source = DataConstants.videoDir.url + File.separator + _creatorData.videoKey;
+					video.validateNow();
+				}
 			}
 			
 			public function set eventData(value:PartyEvent):void {
@@ -77,9 +95,11 @@
 			
 			public function close():void {
 				this.videoContainer.removeAllChildren();
-				video.close();
-				video.source = null;
-				video = null;
+				if(video) {
+					video.close();
+					video.source = null;
+					video = null;
+				}
 				this.dispatchEvent(new Event(Event.CLOSE));
 			}
 		]]>

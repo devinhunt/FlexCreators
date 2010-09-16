@@ -14,7 +14,7 @@ package com.creatorsproject.data
 			this.id = raw.pk;
 			this.name = raw.fields.name;
 			this.location = raw.fields.location;
-			this.synopsis = raw.fields.synopsis;
+			this.synopsis = raw.fields.description;
 			this.iconKey = raw.fields.icon;
 			this.videoKey = raw.fields.video_key;
 		}

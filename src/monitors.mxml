@@ -3,6 +3,13 @@
 	horizontalScrollPolicy="off" verticalScrollPolicy="off" backgroundColor="0x0" xmlns:tv="com.creatorsproject.ui.tv.*">
 
 	<mx:Style>
+		@font-face {
+			src: url("../media/fonts/NeoSansIntel.ttf");
+			fontFamily: NeoSansEmbed;
+			fontStyle: normal;
+			fontWeight: normal; 	
+	     }
+	
 		.headerText {
 			font-family: "NeoSansEmbed";
 			font-size: 24;
@@ -11,21 +18,21 @@
 		}
 		
 		.statusSmall {
-			font-family: "NeoSansEmbed";
+			font-family: Arial;
 			font-size: 14;
 			color: #0079bc;
 			letter-spacing: 2;
 		}
 		
 		.status {
-			font-family: "NeoSansEmbed";
+			font-family: Arial;
 			font-size: 24;
 			color: #000000;
 			letter-spacing: 2;
 		}
 		
 		.statusBig {
-			font-family: "NeoSansEmbed";
+			font-family: Arial;
 			font-size: 82;
 			color: #000000;
 			

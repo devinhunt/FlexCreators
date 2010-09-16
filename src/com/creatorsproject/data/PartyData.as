@@ -48,6 +48,7 @@ package com.creatorsproject.data
 		
 		/** All the floors in the party */
 		private var _floors:Array;
+		private var _touchscreenFloors:Array;
 		
 		/** Creators involved with this party */
 		private var _creators:Array;
@@ -235,9 +236,15 @@ package com.creatorsproject.data
 			var rawData:String = (event.target as URLLoader).data;
 			_rawFloorData = JSON.decode(rawData)
 			_floors = [];
+			_touchscreenFloors = [];
 			
 			for each(var rawFloor:Object in _rawFloorData.data) {
-				_floors.push(new EventFloor(rawFloor)); 
+				var floor:EventFloor = new EventFloor(rawFloor)
+				_floors.push(floor);
+				
+				if(floor.isTouchscreenFloor) {
+					_touchscreenFloors.push(floor);
+				} 
 			}
 			
 			var roomLoader:URLLoader = new URLLoader();
@@ -282,20 +289,21 @@ package com.creatorsproject.data
 			_rawEventData = JSON.decode(rawData)
 			_events = [];
 			
+			try {
+				_startDate = PartyData.dateFromJSON(_rawEventData.data.event_start);
+			} catch(e:Error) {
+				_startDate = null;
+			}
+			
+			try {
+				_endDate = PartyData.dateFromJSON(_rawEventData.data.event_end);
+			} catch(e:Error) {
+				_endDate = null;
+			}
+			
 			for each(var rawEvent:Object in _rawEventData.data.events) {
 				_events.push(new PartyEvent(rawEvent));
 			}
-			
-			// associate our events chips with their events
-			/*
-			for each(var chip:Object in _rawEventData.chips) {
-				for each(var e:PartyEvent in _events) {
-					if(e.id == chip.fields.event) {
-						e.chipUrl = chip.fields.image;
-					}
-				}
-			}
-			*/
 			
 			// associate our events with their room
 			for each(var room:EventRoom in _rooms) {
@@ -303,6 +311,7 @@ package com.creatorsproject.data
 					if(e.roomId == room.id) {
 						room.addEvent(e);
 						e.floorName = this.getFloorFromRoom(room).name;
+						e.isTouchscreenEvent = this.getFloorFromRoom(room).isTouchscreenFloor;
 					}
 				}
 			}
@@ -323,12 +332,17 @@ package com.creatorsproject.data
 			
 			_rooms = finalRooms;
 		
-			// and set out constants;
-			if(_events.length > 0) {
-				var sd:Date = new Date((_events[0] as PartyEvent).startTime.getTime());
-				var ed:Date = new Date((_events[0] as PartyEvent).endTime.getTime());
+			// and set date constants if they have not been set
+			if(_events.length > 0 ) {
+				var sd:Date;// = new Date((_events[0] as PartyEvent).startTime.getTime());
+				var ed:Date;// = new Date((_events[0] as PartyEvent).endTime.getTime());
 				
 				for each(var ev:PartyEvent in _events) {
+					if(sd == null && ed == null) {
+						sd = new Date(ev.startTime.getTime());
+						ed = new Date(ev.endTime.getTime());
+					}
+				
 					if(ev.startTime.getTime() < sd.getTime()) {
 						sd.setTime(ev.startTime.getTime());
 					}
@@ -337,8 +351,8 @@ package com.creatorsproject.data
 						ed.setTime(ev.endTime.getTime());
 					}
 				}
-				_startDate = sd
-				_endDate = ed;
+				_startDate = _startDate ? _startDate : sd
+				_endDate = _endDate ? _endDate : ed;
 			}
 			
 			var eventLoader:URLLoader = new URLLoader();
@@ -433,7 +447,7 @@ package com.creatorsproject.data
 		}
 		
 		public function get nextEvents():Array {
-			var currentDate:Date = new Date(2010, 9, 14, 20, 12, 00);
+			var currentDate:Date = new Date(2010, 9, 17, 20, 12, 00);
 			var events:Array = []
 			var threshold:Number = .5;			// in hours
 			
@@ -505,6 +519,15 @@ package com.creatorsproject.data
 		}
 		
 		/**
+		 * Returns true if the event falls within the current start / end parameters 
+		 * @param ev The event to test
+		 * 
+		 */		
+		public function activeEvent(ev:PartyEvent):Boolean {
+			return ev.startTime.getTime() >= _startDate.getTime() && ev.endTime.getTime() <= _endDate.getTime(); 
+		}
+		
+		/**
 		 * Returns the total number of hours that party scehedule spans 
 		 * 
 		 */		
@@ -513,6 +536,7 @@ package com.creatorsproject.data
 		}
 		
 		public function get floors():Array { return _floors; }
+		public function get touchscreenFloors():Array { return _touchscreenFloors; }
 		public function get rooms():Array { return _rooms; }
 		public function get events():Array { return _events; }
 		public function get creators():Array { return _creators; }		

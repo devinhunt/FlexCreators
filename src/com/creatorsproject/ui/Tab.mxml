@@ -30,5 +30,5 @@
 		]]>
 	</mx:Script>
 
-	<mx:Label id="bob" text="{text}" textAlign="center" verticalCenter="0" horizontalCenter="0" styleName="smallTitle" />
+	<mx:Label id="bob" text="{text}" textAlign="center" verticalCenter="0" horizontalCenter="0" styleName="smallTitle" fontFamily="Arial" />
 </mx:Canvas>

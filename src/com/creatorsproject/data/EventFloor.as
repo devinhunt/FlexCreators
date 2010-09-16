@@ -7,6 +7,7 @@ package com.creatorsproject.data
 		public var id:String;
 		public var order:int;
 		public var name:String;
+		public var isTouchscreenFloor:Boolean;
 		
 		/** All the rooms associated with this floor */
 		public var rooms:Array;
@@ -16,6 +17,7 @@ package com.creatorsproject.data
 			this.id = rawFloor.pk;
 			this.name = rawFloor.fields.name;
 			this.order = parseInt(rawFloor.fields.order, 10);
+			this.isTouchscreenFloor = rawFloor.fields.touchscreen_floor;
 			this.rooms = []; 
 		}
 		

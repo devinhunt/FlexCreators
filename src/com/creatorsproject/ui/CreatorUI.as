@@ -148,6 +148,7 @@ package com.creatorsproject.ui
 				plane.x = radius * Math.cos(thetaStep * c);
 				plane.z = radius * Math.sin(thetaStep * c);
 				plane.rotationY = 270 - (180 * (thetaStep * c / Math.PI));
+				plane.scale = .9;
 				plane.addEventListener(InteractiveScene3DEvent.OBJECT_RELEASE, this.onChipClick);
 				
 				_root.addChild(plane);

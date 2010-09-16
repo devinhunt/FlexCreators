@@ -37,7 +37,7 @@ package com.creatorsproject.ui
 		{
 			var c:ColorMaterial = new ColorMaterial();
 			c.interactive = true;
-			super(c, 401, 352);
+			super(c, 401, 370);
 			this.creator = creator;
 			this.getAndLoadImage();
 		}
@@ -70,12 +70,12 @@ package com.creatorsproject.ui
 			
 			var t:TextField = new TextField();
 			t.text = creator.name;
-			var format:TextFormat = new TextFormat("Neo Sans Intel", 32);
+			var format:TextFormat = new TextFormat("Arial", 48);
 			t.setTextFormat(format);
 			t.x = 20;
-			t.y = _imageLoader.height + 10;
+			t.y = _imageLoader.height;
 			t.width = 2 * _imageLoader.width / 3;
-			t.height = 40;
+			t.height = 50;
 			
 			tex.addChild(t);
 			

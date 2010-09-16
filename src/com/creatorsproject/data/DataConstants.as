@@ -28,8 +28,8 @@ package com.creatorsproject.data
 		public static function get mediaUrl():String { return isLocal ? URL_LOCAL_IMG : URL_LIVE_IMG; }
 		public static function get serverUrl():String { return isLocal ? URL_LOCAL : URL_LIVE; }
 		
-		public static const floorColors:Object = { "1st Floor" : 0xED1C8F,
-												   "Second Floor" : 0xf8941d,
+		public static const floorColors:Object = { "Beijing House" : 0xED1C8F,
+												   "1st factory" : 0xf8941d,
 												   "Eighth Floor" : 0x00AFDB }
 		
 		public static const roomColors:Object = { "First Floor" : 0xffffff,
@@ -38,13 +38,8 @@ package com.creatorsproject.data
 												   
 		public static var videoDir:File;
 		
-		/*_________________________________________________ Videos used in this bitch! */
+		/*_________________________________________________ Creators used in this bitch! */
 		
-		//[Embed(source="../../../../media/videos/test_vice.flv", mimeType="application/octet-stream")]
-		//public static var testFlv:Class;
-		
-		//[Embed(source="../../../../media/videos/test.mp4", mimeType="application/octet-stream")]
-		//public static var testMpg:Class;
 		
 		
 	}

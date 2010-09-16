@@ -34,23 +34,23 @@ package com.creatorsproject.ui
 	{
 		private var angle:Number = 16;
 		
-		[Embed(source="../media/img/chinamap/master.jpg")]
+		[Embed(source="../media/img/chinamap/master.png")]
 		private var _masterImage:Class;
-		[Embed(source="../media/img/chinamap/map1.jpg")]
+		[Embed(source="../media/img/chinamap/Beijing_House.png")]
 		private var _map1Image:Class;
-		[Embed(source="../media/img/chinamap/map2.jpg")]
+		[Embed(source="../media/img/chinamap/Art_Bridge.png")]
 		private var _map2Image:Class;
-		[Embed(source="../media/img/chinamap/map3.jpg")]
+		[Embed(source="../media/img/chinamap/798_Space.png")]
 		private var _map3Image:Class;
-		[Embed(source="../media/img/chinamap/map4.jpg")]
+		[Embed(source="../media/img/chinamap/1st_Factory.png")]
 		private var _map4Image:Class;
-		[Embed(source="../media/img/chinamap/map5.jpg")]
+		[Embed(source="../media/img/chinamap/Beyond_Art.png")]
 		private var _map5Image:Class;
-		[Embed(source="../media/img/chinamap/map6.jpg")]
+		[Embed(source="../media/img/chinamap/Pu_Gallery.png")]
 		private var _map6Image:Class;
-		[Embed(source="../media/img/chinamap/map7.jpg")]
+		[Embed(source="../media/img/chinamap/T_Art_1.png")]
 		private var _map7Image:Class;
-		[Embed(source="../media/img/chinamap/map8.jpg")]
+		[Embed(source="../media/img/chinamap/T_Art_2.png")]
 		private var _map8Image:Class;
 		
 		
@@ -69,7 +69,7 @@ package com.creatorsproject.ui
 		private var _mapMaster:MapPlane;
 		
 		private var _minTheta:Number = 0;
-		private var _maxTheta:Number = 10 / 8 * 180;
+		private var _maxTheta:Number = 8 / 8 * 180;
 		
 		private var _mapToPoint:Dictionary;
 		private var _mapToPointThreshold:Number = 1000;
@@ -105,17 +105,17 @@ package com.creatorsproject.ui
 			mat.interactive = true;
 			mat.smooth = true;
 			
-			_mapMaster = new MapPlane(onMapOverviewRelease, mat, 1000, 707, 4, 4);
+			_mapMaster = new MapPlane(onMapOverviewRelease, mat, 771, 800, 4, 4);
 
 			
-			_map1 = new MapPlane(onMapOverviewRelease, new BitmapMaterial((new _map1Image() as BitmapAsset).bitmapData, true), 1000, 707, 4, 4);
-			_map2 = new MapPlane(onMapOverviewRelease, new BitmapMaterial((new _map2Image() as BitmapAsset).bitmapData, true), 1000, 707, 4, 4);
-			_map3 = new MapPlane(onMapOverviewRelease, new BitmapMaterial((new _map3Image() as BitmapAsset).bitmapData, true), 1000, 707, 4, 4);
-			_map4 = new MapPlane(onMapOverviewRelease, new BitmapMaterial((new _map4Image() as BitmapAsset).bitmapData, true), 1000, 707, 4, 4);
-			_map5 = new MapPlane(onMapOverviewRelease, new BitmapMaterial((new _map5Image() as BitmapAsset).bitmapData, true), 1000, 707, 4, 4);
-			_map6 = new MapPlane(onMapOverviewRelease, new BitmapMaterial((new _map6Image() as BitmapAsset).bitmapData, true), 1000, 707, 4, 4);
-			_map7 = new MapPlane(onMapOverviewRelease, new BitmapMaterial((new _map7Image() as BitmapAsset).bitmapData, true), 1000, 707, 4, 4);
-			_map8 = new MapPlane(onMapOverviewRelease, new BitmapMaterial((new _map8Image() as BitmapAsset).bitmapData, true), 1000, 707, 4, 4);
+			_map1 = new MapPlane(onMapOverviewRelease, new BitmapMaterial((new _map1Image() as BitmapAsset).bitmapData, true), 545, 800, 4, 4);
+			_map2 = new MapPlane(onMapOverviewRelease, new BitmapMaterial((new _map2Image() as BitmapAsset).bitmapData, true), 545, 800, 4, 4);
+			_map3 = new MapPlane(onMapOverviewRelease, new BitmapMaterial((new _map3Image() as BitmapAsset).bitmapData, true), 545, 800, 4, 4);
+			_map4 = new MapPlane(onMapOverviewRelease, new BitmapMaterial((new _map4Image() as BitmapAsset).bitmapData, true), 545, 800, 4, 4);
+			_map5 = new MapPlane(onMapOverviewRelease, new BitmapMaterial((new _map5Image() as BitmapAsset).bitmapData, true), 545, 800, 4, 4);
+			_map6 = new MapPlane(onMapOverviewRelease, new BitmapMaterial((new _map6Image() as BitmapAsset).bitmapData, true), 545, 800, 4, 4);
+			_map7 = new MapPlane(onMapOverviewRelease, new BitmapMaterial((new _map7Image() as BitmapAsset).bitmapData, true), 545, 800, 4, 4);
+			_map8 = new MapPlane(onMapOverviewRelease, new BitmapMaterial((new _map8Image() as BitmapAsset).bitmapData, true), 545, 800, 4, 4);
 			
 			_maps = [_mapMaster, _map1, _map2, _map3, _map4, _map5, _map6, _map7, _map8];
 			
@@ -123,15 +123,23 @@ package com.creatorsproject.ui
 				map.scale = .8;
 			}
 			
-			_map1.masterLocation = new Point(0, 0);
-			_map1.order = 1;
-			//_map2.masterLocation = new Point(0, 0);
-			//_map3.masterLocation = new Point(0, 0);
-			//_map4.masterLocation = new Point(0, 0);
-			//_map5.masterLocation = new Point(0, 0);
-			//_map6.masterLocation = new Point(0, 0);
-			//_map7.masterLocation = new Point(0, 0);
-			//_map8.masterLocation = new Point(0, 0);
+			_map1.order = 2;
+			_map2.order = 3;
+			_map3.order = 4;
+			_map4.order = 5;
+			_map5.order = 6;
+			_map6.order = 7;
+			_map7.order = 8;
+			_map8.order = 9;
+			
+			_map1.masterLocation = new Point(625, 261);
+			_map2.masterLocation = new Point(310, 418);
+			_map3.masterLocation = new Point(344, 508);
+			_map4.masterLocation = new Point(722, 100);
+			_map5.masterLocation = new Point(453, 381);
+			_map6.masterLocation = new Point(296, 624);
+			_map7.masterLocation = new Point(36, 273);
+			_map8.masterLocation = new Point(136, 273);
 			
 			resetMaps();
 			
@@ -152,7 +160,7 @@ package com.creatorsproject.ui
 			closeButton.width = 80;
 			closeButton.height = 80;
 			closeButton.styleName = "touchButton";
-			closeButton.setStyle("horizontalCenter", 468);
+			closeButton.setStyle("horizontalCenter", 272);
 			closeButton.setStyle("verticalCenter", -254);
 			closeButton.label = "X";
 			closeButton.addEventListener(MouseEvent.CLICK, onCloseClick);
@@ -244,6 +252,13 @@ package com.creatorsproject.ui
 					break;
 				case "focus":
 					main.instance.frontUI.addChild(this.closeButton);
+					if(_targetMap == _mapMaster) {
+						closeButton.setStyle("horizontalCenter", 370);
+					} else {
+						closeButton.setStyle("horizontalCenter", 274);
+					}
+					
+					
 					centerMap();
 					updateMapFocus();
 					break;
@@ -346,15 +361,15 @@ package com.creatorsproject.ui
 			
 			var events:Array = _partyData.nextEvents;
 			
-			var pushx:Number = main.instance.frontUI.width / 2 - 260;
-			var pushy:Number = main.instance.frontUI.height / 2;
+			var pushx:Number = main.instance.frontUI.width / 2 - 250;
+			var pushy:Number = main.instance.frontUI.height / 2 - 350;
 			
 			for each(var ev:PartyEvent in events) {
 				var room:EventRoom = _partyData.getRoomFromId(ev.roomId);
 				if(room && room.floorId == floor.id) {
 					var marker:MapMarker = this.getMarker(ev);
-					marker.x = room.x / 1.22 + pushx;
-					marker.y = room.y / 1.22 + pushy;
+					marker.x = pushx + (room.x + room.width / 2) * .8;
+					marker.y = pushy + (room.y + room.height / 2) * .8;
 					main.instance.frontUI.addChild(marker)
 					_liveMarkers.push(marker);
 				}

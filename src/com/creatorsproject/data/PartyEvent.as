@@ -27,6 +27,8 @@ package com.creatorsproject.data
 		/** The new of the floor */
 		public var floorName:String  = "Default floor";
 		
+		public var isTouchscreenEvent:Boolean = false;
+		
 		public var description:String;
 		
 		/** ID of the creator for this event */
@@ -64,7 +66,7 @@ package com.creatorsproject.data
 			eHours = eHours.length < 2 ? "0" + eHours : eHours;
 			eMinutes = eMinutes.length < 2 ? "0" + eMinutes : eMinutes;
 			
-			return sHours + ":" + sMinutes + " to " + eHours + ":" + eMinutes; 
+			return startTime.date + "/" + startTime.month + "/" + startTime.fullYear + " " + sHours + ":" + sMinutes + " to " + eHours + ":" + eMinutes; 
 		}
 	}
 }

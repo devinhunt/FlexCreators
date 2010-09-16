@@ -46,8 +46,8 @@ package com.creatorsproject.ui
 		/** The schedule model we're displaying */
 		private var _schedule:PartyData;
 		
-		private var _widthPerHour:Number = 280;
-		private var _bandHeight:Number = 300;
+		private var _widthPerHour:Number = 250;
+		private var _bandHeight:Number = 200;
 		private var _roomBandHeight:Number = 100;
 		
 		/** Step to divide the grid by, in hours */
@@ -109,11 +109,13 @@ package com.creatorsproject.ui
 			_root.z = 500;
 			
 			_backButton = new Button();
-			_backButton.label = "BACK";
+			_backButton.label = "X";
 			//_backButton.setStyle("top", 10);
 			//_backButton.setStyle("left", 10);
 			_backButton.x = 70;
 			_backButton.y = 70;
+			_backButton.width = 80;
+			_backButton.height = 80;
 			_backButton.setStyle("right", 10);
 			_backButton.styleName = "touchButton";
 			_backButton.addEventListener(MouseEvent.CLICK, onBackClick);
@@ -182,7 +184,7 @@ package com.creatorsproject.ui
 					hideMarkers();
 					
 					var names:Array = [];
-					for each(var floor:EventFloor in _schedule.floors) {
+					for each(var floor:EventFloor in _schedule.touchscreenFloors) {
 						names.push(floor.name);
 					}
 					
@@ -322,9 +324,9 @@ package com.creatorsproject.ui
 			
 			var spacing:Number = _bandHeight + 5; 
 			
-			for(var f:int = 0; f < _schedule.floors.length; f ++) {
-				var band:TileBand = this.getFloorBand(_schedule.floors[f]);
-				band.y = (spacing * (_schedule.floors.length - 1) / 2) - spacing * f - (spacing / 2);
+			for(var f:int = 0; f < _schedule.touchscreenFloors.length; f ++) {
+				var band:TileBand = this.getFloorBand(_schedule.touchscreenFloors[f]);
+				band.y = (spacing * (_schedule.touchscreenFloors.length - 1) / 2) - spacing * f - (spacing / 2);
 				band.addEventListener(InteractiveScene3DEvent.OBJECT_RELEASE, this.onFloorBandRelease);
 				_floorBands.addChild(band);
 			}
@@ -425,7 +427,9 @@ package com.creatorsproject.ui
 			var g:Graphics = parent.graphics;
 			var spacing:Number = 4;
 			for(var e:int = 0; e < room.events.length; e ++) {
-				var event:PartyEvent = room.events[e];
+				
+				if(_schedule.activeEvent(room.events[e])) {
+					var event:PartyEvent = room.events[e];
 					var startHr:Number = (event.startTime.getTime() - _schedule.startDate.getTime()) / 1000 / 60 / 60;
 					var endHr:Number = (event.endTime.getTime() - _schedule.startDate.getTime()) / 1000 / 60 / 60;
 					
@@ -440,7 +444,7 @@ package com.creatorsproject.ui
 					var text:TextField = new TextField();
 					text.htmlText = event.name;
 					
-					var format:TextFormat = new TextFormat("Neo Sans Intel", 24, 0xffffff);
+					var format:TextFormat = new TextFormat("Neo Sans Intel", 20, 0xffffff);
 					text.setTextFormat(format);
 					text.width = (endHr - startHr) * _widthPerHour - 10;
 					text.height = height / 2 + 10;
@@ -450,6 +454,7 @@ package com.creatorsproject.ui
 					
 					
 					parent.addChild(text); 
+				}
 			}
 		}
 		

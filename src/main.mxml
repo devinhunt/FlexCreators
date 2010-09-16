@@ -67,6 +67,15 @@
 			color: #ffffff;
 		}
 		
+		.creatorText {
+		   fontFamily: Arial;
+		   fontSize: 16;
+		   color: #ffffff;
+		   letterSpacing: 1;
+		   backgroundColor: #000000;
+		   borderStyle: none;
+		}
+		
 	</mx:Style>
 
 	<mx:Script>
@@ -379,8 +388,8 @@
 				} else if(_camState == "creator") {
 					tab1.visible = true;
 					tab2.visible = true;
-					tab1.text = "EVENTS";
-					tab2.text = "MAP";
+					tab1.text = "活动";
+					tab2.text = "地图";
 				} else {
 					tab1.visible = true;
 					tab2.visible = false;
