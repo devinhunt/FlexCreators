@@ -3,44 +3,41 @@
 	horizontalScrollPolicy="off" verticalScrollPolicy="off" backgroundColor="0x0" xmlns:tv="com.creatorsproject.ui.tv.*">
 
 	<mx:Style>
-		@font-face {
-			src: url("../media/fonts/NeoSansIntel.ttf");
-			fontFamily: NeoSansEmbed;
-			fontStyle: normal;
-			fontWeight: normal; 	
-	     }
 	
 		.headerText {
-			font-family: "NeoSansEmbed";
+			font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
 			font-size: 24;
 			color: #ffffff;
 			letter-spacing: 2;
 		}
 		
 		.statusSmall {
-			font-family: Arial;
+			font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
 			font-size: 14;
 			color: #0079bc;
-			letter-spacing: 2;
+			letter-spacing: 0;
 		}
 		
 		.status {
-			font-family: Arial;
+			font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
 			font-size: 24;
 			color: #000000;
-			letter-spacing: 2;
+			letter-spacing: 0;
 		}
 		
 		.statusBig {
-			font-family: Arial;
+			font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
 			font-size: 82;
+			line-height: 70;
 			color: #000000;
 			
 			padding-top: 0;
 			padding-bottom: 0;
-			letter-spacing: 2;
+			letter-spacing: 0;
 		}
 	</mx:Style>
+	
+	
 
 	<mx:Script>
 
@@ -54,6 +51,10 @@
 			import com.creatorsproject.ui.tv.StatusCard;
 			import mx.events.CollectionEvent;
 			import com.creatorsproject.data.PartyData;
+			
+			[Embed(source="../media/img/logo.png")]
+            [Bindable]
+            public var logoClass:Class;
 		
 			[Bindable]
 			public var _partyData:PartyData;
@@ -165,7 +166,7 @@
 				var hours:int = ((currentDate.getTime() - event.startTime.getTime()) / 1000 / 60 / 60) % 24;
 				
 				var eventText:String = event.name + " in " + event.roomName + " in " + hours + ":" + mins + ":" + secs;
-				this.latestEvent.htmlText = eventText;
+				//this.latestEvent.htmlText = eventText;
 			}
 			
 			private function onStatusChange(event:CollectionEvent):void {
@@ -215,9 +216,10 @@
 	
 	
 	<mx:HBox top="0" left="0" width="70%" backgroundColor="0x000000" height="10%" verticalAlign="middle" paddingLeft="20" paddingRight="20">
-		<mx:Label id="currentTime" styleName="headerText" />
+		<mx:Image id="logo" source="{logoClass}" /> 
 		<mx:Spacer height="10" width="100%" />
-		<mx:Label id="latestEvent" styleName="headerText" />
+		<mx:Label id="currentTime" styleName="headerText" />
+		
 	</mx:HBox>
 	
 	<mx:List id="statusList" top="0" right="0" width="30%" height="100%" 
