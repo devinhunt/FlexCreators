@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<mx:VBox xmlns:mx="http://www.adobe.com/2006/mxml" horizontalScrollPolicy="off" verticalScrollPolicy="off"
+<mx:VBox xmlns:mx="http://www.adobe.com/2006/mxml" horizontalScrollPolicy="off" verticalScrollPolicy="off" backgroundColor="0x000000" 
 	paddingBottom="10" paddingTop="10" paddingLeft="10" paddingRight="10" verticalGap="0" dataChange="onDataChange(event)" render="background()" updateComplete="checkSize()">
 
 	<mx:Script>
@@ -13,15 +13,11 @@
 			}
 			
 			private function background(event:Event = null):void {
-				// set the background, to!
 				var g:Graphics = this.graphics;
-				var grad:Matrix = new Matrix();
-				grad.createGradientBox(this.width, this.height, 90);
 				
-				g.clear();
-				g.beginGradientFill(GradientType.LINEAR, [0xaaaaaa, 0xeeeeee], [1, 1], [0, 255], grad);
-				g.drawRect(0, 0, this.width, this.height);
-				g.endFill();
+				g.lineStyle(2, 0xffffff, 1);
+				g.moveTo(0, 0);
+				g.lineTo(this.width, 0);
 			}
 			
 			private function checkSize():void {

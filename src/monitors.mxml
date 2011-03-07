@@ -14,14 +14,14 @@
 		.statusSmall {
 			font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
 			font-size: 14;
-			color: #0079bc;
+			color: #ffffff;
 			letter-spacing: 0;
 		}
 		
 		.status {
 			font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
 			font-size: 24;
-			color: #000000;
+			color: #ffffff;
 			letter-spacing: 0;
 		}
 		
@@ -29,7 +29,7 @@
 			font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
 			font-size: 82;
 			line-height: 70;
-			color: #000000;
+			color: #ffffff;
 			
 			padding-top: 0;
 			padding-bottom: 0;
@@ -204,25 +204,26 @@
 	</mx:Script>
 	
 	<mx:Canvas width="70%" height="90%" bottom="0" left="0" horizontalScrollPolicy="off" verticalScrollPolicy="off">
-		
-		<mx:Image id="backImage" horizontalCenter="0" verticalCenter="0" width="100%" height="100%" />
-		<mx:Image id="frontImage" horizontalCenter="0" verticalCenter="0" width="100%" height="100%" />
+		<mx:Canvas left="25" right="20" top="0" bottom="0">
+			<mx:Image id="backImage" horizontalCenter="0" verticalCenter="0" width="100%" height="100%" />
+			<mx:Image id="frontImage" horizontalCenter="0" verticalCenter="0" width="100%" height="100%" />
+		</mx:Canvas>
 		
 		<mx:Canvas width="100%" height="100%" backgroundColor="0x000000" backgroundAlpha=".25" id="majorMatte" />
 		
 		<mx:Text id="majorStatus" color="0xffffff" styleName="statusBig"
-			width="66%" height="100%" paddingTop="20" paddingBottom="20" paddingLeft="20" paddingRight="20"/>
+			width="66%" height="100%" paddingTop="20" paddingBottom="20" paddingLeft="20" paddingRight="20" x="87" y="94"/>
 	</mx:Canvas>
 	
 	
-	<mx:HBox top="0" left="0" width="70%" backgroundColor="0x000000" height="10%" verticalAlign="middle" paddingLeft="20" paddingRight="20">
+	<mx:HBox top="0" left="0" width="100%" backgroundColor="0x000000" height="10%" verticalAlign="middle" paddingLeft="20" paddingRight="20">
 		<mx:Image id="logo" source="{logoClass}" /> 
 		<mx:Spacer height="10" width="100%" />
 		<mx:Label id="currentTime" styleName="headerText" />
 		
 	</mx:HBox>
 	
-	<mx:List id="statusList" top="0" right="0" width="30%" height="100%" 
+	<mx:List id="statusList" bottom="0" right="0" width="30%" height="90%" 
 		backgroundColor="0x000000" borderThickness="0" 
 		paddingTop="0" paddingBottom="0" paddingLeft="0" paddingRight="0" variableRowHeight="true"
 		dataProvider="{_partyData.statuses}" horizontalScrollPolicy="off" verticalScrollPolicy="off">
@@ -235,7 +236,7 @@
 	</mx:List>
 		
 	<mx:TitleWindow horizontalCenter="0" verticalCenter="0" title="Pick your server poison" id="initWindow">
-		<mx:Button label="Run Screen from Localhost" click="init()"/>
+		<mx:Button label="Run Screen from Localhost" click="init()"/>	
 		<mx:Button label="Run Screen from Production Server" click="init(false)" />
 	</mx:TitleWindow>
 	
