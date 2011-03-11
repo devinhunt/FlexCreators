@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<mx:VBox xmlns:mx="http://www.adobe.com/2006/mxml" horizontalScrollPolicy="off" verticalScrollPolicy="off" backgroundColor="0x000000" 
-	paddingBottom="10" paddingTop="10" paddingLeft="10" paddingRight="10" verticalGap="0" dataChange="onDataChange(event)" render="background()" updateComplete="checkSize()">
+<mx:VBox xmlns:mx="http://www.adobe.com/2006/mxml" horizontalScrollPolicy="off" verticalScrollPolicy="off"  
+	paddingBottom="26" paddingTop="-6" paddingLeft="10" paddingRight="10" verticalGap="0" dataChange="onDataChange(event)" render="background()" updateComplete="checkSize()">
 
 	<mx:Script>
 		<![CDATA[
@@ -15,9 +15,9 @@
 			private function background(event:Event = null):void {
 				var g:Graphics = this.graphics;
 				
-				g.lineStyle(2, 0xffffff, 1);
-				g.moveTo(0, 0);
-				g.lineTo(this.width, 0);
+				g.lineStyle(1, 0xffffff);
+				g.moveTo(0, this.height - 10);
+				g.lineTo(this.width, this.height - 10);
 			}
 			
 			private function checkSize():void {
