@@ -213,11 +213,11 @@
 		<mx:Canvas width="100%" height="100%" backgroundColor="0x000000" backgroundAlpha=".25" id="majorMatte" />
 		
 		<mx:Text id="majorStatus" color="0xffffff" styleName="statusBig"
-			width="66%" height="100%" paddingTop="20" paddingBottom="20" paddingLeft="20" paddingRight="20" x="87" y="94"/>
+			width="66%" height="100%" paddingTop="10" paddingBottom="20" paddingLeft="10" paddingRight="20" x="87" y="94"/>
 	</mx:Canvas>
 	
 	
-	<mx:HBox top="0" left="0" width="100%" backgroundColor="0x000000" height="10%" verticalAlign="middle" paddingLeft="20" paddingRight="20">
+	<mx:HBox top="0" left="0" width="100%" backgroundColor="0x000000" height="10%" verticalAlign="middle" paddingLeft="21" paddingRight="20">
 		<mx:Image id="logo" source="{logoClass}" /> 
 		<mx:Spacer height="10" width="100%" />
 		<mx:Label id="currentTime" styleName="headerText" />
@@ -235,7 +235,7 @@
 		</mx:itemRenderer>
 	</mx:List>
 	
-	<mx:HBox bottom="0" left="0" height="83" width="100%" paddingLeft="20" paddingRight="20" backgroundColor="0x0" verticalAlign="middle">
+	<mx:HBox bottom="0" left="0" height="83" width="100%" paddingLeft="25" paddingRight="20" backgroundColor="0x0" verticalAlign="middle">
 		<mx:Image source="@Embed(source='../media/img/VICE_white_thick.png')" height="43" verticalAlign="center"/>
 		<mx:Spacer width="100%" height="10"/>
 		<mx:Image source="@Embed(source='../media/img/dell_intel_lockup.png')" height="43" horizontalCenter="center"/>
